@@ -1,0 +1,41 @@
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>WebDiffer - login</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="/webjars/bootstrap/4.3.1/css/bootstrap.css">
+</head>
+<body>
+<div class="container">
+    <div th:replace="layout :: header"></div>
+    <p class="lead pt-5 pb-1">
+        Application for monitor changes on other web pages
+    </p>
+    <div th:if="${logout}" class="row justify-content-md-center">
+        <div class="alert alert-success" role="alert">You have been signed out</div>
+    </div>
+    <div class="row justify-content-md-center">
+        <div class="col-md-auto">
+            <form th:action="${oauthUrl}" method="get">
+                <button type="submit" class="btn btn-outline-primary">Login using Google account</button>
+            </form>
+        </div>
+    </div>
+    <div th:if="${errorMessage}" class="row justify-content-md-center pt-1">
+        <div class="alert alert-danger" role="alert" th:text="${errorMessage}">...</div>
+    </div>
+    <div class="row align-items-end pt-5">
+        <div class="col">
+            <div class="alert alert-danger" role="alert">
+                You can use this application with absolutely no warranty and at your own risk! Nothing is guaranteed.
+                Google account is used to authenticate user and send notification emails.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/webjars/jquery/3.3.1/jquery.js"></script>
+<script src="/webjars/bootstrap/4.3.1/js/bootstrap.js"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title>layout page</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="/webjars/bootstrap/4.3.1/css/bootstrap.css">
+    <script src="/webjars/jquery/3.3.1/jquery.js"></script>
+    <script src="/webjars/bootstrap/4.3.1/js/bootstrap.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <nav class="navbar navbar-dark bg-dark" th:fragment="header">
+        <a class="navbar-brand" href="/">
+            <img src="/static/dog-icon.png" width="30" height="30" class="d-inline-block align-top" alt="">
+            WebDiffer
+        </a>
+
+        <div class="btn-group" sec:authorize="isAuthenticated()">
+            <button type="button"
+                    class="btn btn-danger dropdown-toggle"
+                    data-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                    sec:authentication="principal.attributes[name]">
+                ...
+            </button>
+            <div class="dropdown-menu">
+                <a class="dropdown-item" href="/profile">Profile</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="/logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+    ...
+</div>
+</body>
+</html>

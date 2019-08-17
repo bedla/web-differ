@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>WebDiffer - invitation</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="/webjars/bootstrap/4.3.1/css/bootstrap.css">
+    <script src="/webjars/jquery/3.3.1/jquery.js"></script>
+    <script src="/webjars/bootstrap/4.3.1/js/bootstrap.js"></script>
+</head>
+<body>
+<div class="container">
+    <div th:replace="layout :: header"></div>
+    <h1>User profile</h1>
+    <div class="row justify-content-md-center">
+        <div class="card" style="width: 18rem;">
+            <img th:src="${photoUrl}" class="card-img-top" alt="Avatar">
+            <div class="card-body">
+                <h5 class="card-title" th:text="|${firstName} ${lastName}|">...</h5>
+                <p class="card-text" th:text="${additionalInfo}">...</p>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
