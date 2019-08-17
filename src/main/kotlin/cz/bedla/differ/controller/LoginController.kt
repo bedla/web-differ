@@ -1,4 +1,4 @@
-package cz.bedla.differ
+package cz.bedla.differ.controller
 
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository

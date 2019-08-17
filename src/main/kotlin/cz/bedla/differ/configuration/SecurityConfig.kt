@@ -1,5 +1,6 @@
-package cz.bedla.differ
+package cz.bedla.differ.configuration
 
+import cz.bedla.differ.security.AuthenticatedUserUpdater
 import jetbrains.exodus.entitystore.PersistentEntityStore
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

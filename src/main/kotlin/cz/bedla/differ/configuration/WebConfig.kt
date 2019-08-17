@@ -1,4 +1,4 @@
-package cz.bedla.differ
+package cz.bedla.differ.configuration
 
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.servlet.config.annotation.EnableWebMvc

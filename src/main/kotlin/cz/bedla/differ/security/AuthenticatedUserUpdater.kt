@@ -1,4 +1,4 @@
-package cz.bedla.differ
+package cz.bedla.differ.security
 
 import jetbrains.exodus.entitystore.PersistentEntityStore
 import org.springframework.context.ApplicationListener

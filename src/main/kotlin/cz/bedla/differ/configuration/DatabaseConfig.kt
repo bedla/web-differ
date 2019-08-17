@@ -1,4 +1,4 @@
-package cz.bedla.differ
+package cz.bedla.differ.configuration
 
 import jetbrains.exodus.entitystore.PersistentEntityStore
 import jetbrains.exodus.entitystore.PersistentEntityStores
