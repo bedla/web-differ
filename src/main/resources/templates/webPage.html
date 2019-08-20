@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>WebDiffer</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="/webjars/bootstrap/4.3.1/css/bootstrap.css">
+    <script src="/webjars/jquery/3.3.1/jquery.js"></script>
+    <script src="/webjars/bootstrap/4.3.1/js/bootstrap.js"></script>
+</head>
+<body>
+<div class="container">
+    <div th:replace="layout :: header"></div>
+    <h1>WebPage</h1>
+</div>
+
+<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+<script>
+    $(function () {
+        let url = new URLSearchParams(window.location.search);
+        let webPageId = url.get('id');
+
+        let loadWebPage = function (id) {
+            $.ajax({
+                type: "GET",
+                url: `/api/user/me/web-page/${id}`,
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    console.log(data);
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.log(textStatus);
+                    console.log(errorThrown);
+                }
+            })
+        };
+
+        loadWebPage(webPageId);
+    })
+    ;
+</script>
+</body>
+</html>

@@ -12,8 +12,5 @@ class DatabaseConfig(
     @Value("#{environment['databaseDir']}") val databaseDir: File
 ) {
     @Bean(destroyMethod = "close")
-    fun persistentEntityStore(): PersistentEntityStore {
-        databaseDir.mkdir()
-        return PersistentEntityStores.newInstance(databaseDir)
-    }
+    fun persistentEntityStore(): PersistentEntityStore = PersistentEntityStores.newInstance(databaseDir)
 }

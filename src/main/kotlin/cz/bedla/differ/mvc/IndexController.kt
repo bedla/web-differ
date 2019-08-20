@@ -1,4 +1,4 @@
-package cz.bedla.differ.controller
+package cz.bedla.differ.mvc
 
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model

@@ -1,10 +1,10 @@
 package cz.bedla.differ.security
 
+import cz.bedla.differ.utils.getAttribute
 import jetbrains.exodus.entitystore.PersistentEntityStore
 import org.springframework.context.ApplicationListener
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent
 import org.springframework.security.oauth2.client.authentication.OAuth2LoginAuthenticationToken
-import org.springframework.security.oauth2.core.user.OAuth2User
 
 class AuthenticatedUserUpdater(
     private val persistentEntityStore: PersistentEntityStore
@@ -38,9 +38,5 @@ class AuthenticatedUserUpdater(
             entity.setProperty("lastName", lastName)
             entity.setProperty("email", email)
         }
-    }
-
-    private fun OAuth2User.getAttribute(key: String): String {
-        return attributes[key] as? String ?: error("no '$key' found at attributes $this")
     }
 }
