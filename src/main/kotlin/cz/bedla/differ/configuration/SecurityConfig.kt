@@ -17,7 +17,9 @@ import org.thymeleaf.extras.springsecurity5.dialect.SpringSecurityDialect
 
 @Configuration
 @EnableWebSecurity
-class SecurityConfig : WebSecurityConfigurerAdapter() {
+class SecurityConfig(
+    private val persistentEntityStore: PersistentEntityStore
+) : WebSecurityConfigurerAdapter() {
     override fun configure(http: HttpSecurity) {
         http.authorizeRequests()
             .antMatchers("/login").permitAll()
@@ -49,5 +51,5 @@ class SecurityConfig : WebSecurityConfigurerAdapter() {
 
     @Bean
     @ApplicationScope
-    fun userService(): UserService = UserServiceImpl()
+    fun userService(): UserService = UserServiceImpl(persistentEntityStore)
 }

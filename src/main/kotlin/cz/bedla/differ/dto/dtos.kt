@@ -25,33 +25,47 @@ data class WebPage(
     val url: String,
     val enabled: Boolean,
     val created: ZonedDateTime
-) {
-    companion object {
-        fun createFromEntity(entity: Entity): WebPage {
-            val id = entity.id.toString()
-            val name = entity.getPropertyAsString("name")
-            val url = entity.getPropertyAsString("url")
-            val enabled = entity.getPropertyAsBoolean("enabled")
-            val created = entity.getPropertyAsZonedDateTime("created")
-            return WebPage(id, name, url, enabled, created)
-        }
-    }
+)
+
+fun Entity.createWebPage(): WebPage {
+    val id = id.toString()
+    val name = getPropertyAsString("name")
+    val url = getPropertyAsString("url")
+    val enabled = getPropertyAsBoolean("enabled")
+    val created = getPropertyAsZonedDateTime("created")
+    return WebPage(id, name, url, enabled, created)
 }
+
 
 data class WebPageDetail(
     val name: String,
     val url: String,
     val enabled: Boolean,
     val created: ZonedDateTime
-) {
-    companion object {
-        fun createFromEntity(entity: Entity): WebPageDetail {
-            val name = entity.getPropertyAsString("name")
-            val url = entity.getPropertyAsString("url")
-            val enabled = entity.getPropertyAsBoolean("enabled")
-            val created = entity.getPropertyAsZonedDateTime("created")
-            return WebPageDetail(name, url, enabled, created)
-        }
-    }
+)
+
+fun Entity.createWebPageDetail(): WebPageDetail {
+    val name = getPropertyAsString("name")
+    val url = getPropertyAsString("url")
+    val enabled = getPropertyAsBoolean("enabled")
+    val created = getPropertyAsZonedDateTime("created")
+    return WebPageDetail(name, url, enabled, created)
+}
+
+data class User(
+    val subject: String,
+    val firstName: String,
+    val lastName: String,
+    val email: String,
+    val pictureUrl: String
+)
+
+fun Entity.createUser(): User {
+    val subject = getPropertyAsString("subject")
+    val firstName = getPropertyAsString("firstName")
+    val lastName = getPropertyAsString("lastName")
+    val email = getPropertyAsString("email")
+    val pictureUrl = getPropertyAsString("pictureUrl")
+    return User(subject, firstName, lastName, email, pictureUrl)
 }
 

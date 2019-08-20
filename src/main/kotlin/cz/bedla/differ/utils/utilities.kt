@@ -30,3 +30,7 @@ fun Entity.setPropertyZonedDateTime(key: String, value: ZonedDateTime): Boolean 
 fun OAuth2User.getAttribute(key: String): String {
     return attributes[key] as? String ?: error("no '$key' found at attributes $this")
 }
+
+fun OAuth2User.findAttribute(key: String): String? {
+    return attributes[key] as? String
+}

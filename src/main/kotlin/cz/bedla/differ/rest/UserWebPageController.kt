@@ -20,7 +20,7 @@ class UserWebPageController(
     fun get(
         @PathVariable("id") id: String
     ): ResponseEntity<WebPageDetail?> {
-        val result = webPageService.get(id, userService.currentAuthenticatedUser())
+        val result = webPageService.get(id, userService.currentAuthenticatedUserId())
         return if (result == null)
             ResponseEntity.notFound().build()
         else
@@ -29,14 +29,14 @@ class UserWebPageController(
 
     @GetMapping("/user/me/web-page")
     fun list(): List<WebPage> {
-        return webPageService.findAll(userService.currentAuthenticatedUser())
+        return webPageService.findAll(userService.currentAuthenticatedUserId())
     }
 
     @PutMapping("/user/me/web-page")
     fun create(
         @RequestBody createRequest: CreateWebPage
     ): ResponseEntity<Any> {
-        val id = webPageService.create(userService.currentAuthenticatedUser(), createRequest)
+        val id = webPageService.create(userService.currentAuthenticatedUserId(), createRequest)
         return ResponseEntity.created(URI("/api/me/web-page/$id")).build()
     }
 
@@ -45,6 +45,6 @@ class UserWebPageController(
         @PathVariable("id") id: String,
         @RequestBody updateRequest: UpdateWebPage
     ) {
-        webPageService.update(userService.currentAuthenticatedUser(), id, updateRequest)
+        webPageService.update(userService.currentAuthenticatedUserId(), id, updateRequest)
     }
 }
