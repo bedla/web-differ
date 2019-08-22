@@ -6,20 +6,16 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
-fun Entity.getPropertyAsString(key: String): String {
-    return getProperty(key) as? String ?: error("Unable to find property '$key' in entity $this")
+inline fun <reified T> Entity.findPropertyAs(key: String): T? {
+    return getProperty(key) as? T
 }
 
-fun Entity.getPropertyAsLong(key: String): Long {
-    return getProperty(key) as? Long ?: error("Unable to find property '$key' in entity $this")
-}
-
-fun Entity.getPropertyAsBoolean(key: String): Boolean {
-    return getProperty(key) as? Boolean ?: error("Unable to find property '$key' in entity $this")
+inline fun <reified T> Entity.getPropertyAs(key: String): T {
+    return findPropertyAs(key) ?: error("Unable to find property '$key' in entity $this")
 }
 
 fun Entity.getPropertyAsZonedDateTime(key: String): ZonedDateTime {
-    val value = getPropertyAsLong(key)
+    val value: Long = getPropertyAs(key)
     val instant = Instant.ofEpochSecond(value);
     // TODO make time-zone configurable
     return ZonedDateTime.ofInstant(instant, ZoneId.of("Europe/Prague"));

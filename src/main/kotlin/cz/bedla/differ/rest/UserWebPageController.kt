@@ -7,6 +7,7 @@ import cz.bedla.differ.dto.WebPageDetail
 import cz.bedla.differ.service.UserService
 import cz.bedla.differ.service.WebPageService
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.net.URI
 
@@ -16,6 +17,7 @@ class UserWebPageController(
     private val webPageService: WebPageService,
     private val userService: UserService
 ) {
+    @PreAuthorize("isActivated()")
     @GetMapping("/user/me/web-page/{id}")
     fun get(
         @PathVariable("id") id: String
@@ -27,11 +29,13 @@ class UserWebPageController(
             ResponseEntity.ok(result)
     }
 
+    @PreAuthorize("isActivated()")
     @GetMapping("/user/me/web-page")
     fun list(): List<WebPage> {
         return webPageService.findAll(userService.currentAuthenticatedUserId())
     }
 
+    @PreAuthorize("isActivated()")
     @PutMapping("/user/me/web-page")
     fun create(
         @RequestBody createRequest: CreateWebPage
@@ -40,6 +44,7 @@ class UserWebPageController(
         return ResponseEntity.created(URI("/api/me/web-page/$id")).build()
     }
 
+    @PreAuthorize("isActivated()")
     @PostMapping("/user/me/web-page/{id}")
     fun update(
         @PathVariable("id") id: String,

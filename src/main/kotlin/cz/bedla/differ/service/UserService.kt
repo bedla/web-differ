@@ -10,7 +10,17 @@ interface UserService {
 
     fun currentAuthenticatedUser(): User
 
-    fun userIdFromAuthentication(authentication: Authentication): String
+    fun userFromAuthentication(authentication: Authentication): User
+
+    fun activateUser(userId: String)
+
+    fun createOrUpdateUser(
+        subject: String,
+        pictureUrl: String,
+        firstName: String,
+        lastName: String,
+        email: String
+    )
 }
 
 fun StoreTransaction.getUserEntity(userId: String): Entity =

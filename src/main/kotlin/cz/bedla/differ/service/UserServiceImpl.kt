@@ -13,8 +13,11 @@ class UserServiceImpl(
 ) : UserService {
     override fun currentAuthenticatedUser(): User = persistentEntityStore.computeInTransaction { tx ->
         val userId = currentAuthenticatedUserId()
-        val entity = tx.getUserEntity(userId)
-        entity.createUser()
+        userFromDb(userId)
+    }
+
+    override fun userFromAuthentication(authentication: Authentication): User {
+        return userFromDb(userIdFromAuthentication(authentication))
     }
 
     override fun currentAuthenticatedUserId(): String {
@@ -22,7 +25,42 @@ class UserServiceImpl(
             ?: error("Unable to find authentication in security-context ${SecurityContextHolder.getContext()}"))
     }
 
-    override fun userIdFromAuthentication(authentication: Authentication): String {
+    override fun activateUser(userId: String) = persistentEntityStore.executeInExclusiveTransaction { tx ->
+        val entity = tx.getUserEntity(userId)
+        entity.setProperty("active", true)
+    }
+
+    override fun createOrUpdateUser(
+        subject: String,
+        pictureUrl: String,
+        firstName: String,
+        lastName: String,
+        email: String
+    ) = persistentEntityStore.executeInTransaction { tx ->
+        val entity = tx.findUserEntity(subject)
+            .let {
+                if (it == null) {
+                    val newEntity = tx.newEntity("User")
+                    newEntity.setProperty("subject", subject)
+                    newEntity.setProperty("active", false)
+                    newEntity
+                } else {
+                    it
+                }
+            }
+        entity.setProperty("pictureUrl", pictureUrl)
+        entity.setProperty("firstName", firstName)
+        entity.setProperty("lastName", lastName)
+        entity.setProperty("email", email)
+    }
+
+
+    private fun userFromDb(userId: String): User = persistentEntityStore.computeInTransaction { tx ->
+        val entity = tx.getUserEntity(userId)
+        entity.createUser()
+    }
+
+    private fun userIdFromAuthentication(authentication: Authentication): String {
         val user = (authentication.principal as? OAuth2User
             ?: error("Principal is not ${OAuth2User::class.simpleName} but ${authentication.principal}"))
         return user.getAttribute("sub")

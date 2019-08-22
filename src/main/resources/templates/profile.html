@@ -21,6 +21,34 @@
             </div>
         </div>
     </div>
+
+    <div th:if="${!active}" class="row justify-content-md-center pt-3">
+        <div class="alert alert-warning" role="alert">
+            Account is not activated. You need to add activation-code to form below.
+        </div>
+    </div>
+    <div th:if="${!active}" class="row justify-content-md-center">
+        <div class="col-md-auto">
+            <form action="/profile" method="post" class="form-inline">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <div class="form-group mr-1">
+                    <input type="text" class="form-control" name="activationCode" placeholder="activation code here">
+                </div>
+                <button type="submit" class="btn btn-outline-primary">Activate account</button>
+            </form>
+        </div>
+    </div>
+    <div th:if="${!active and #strings.equals(param.result, 'invalid-code')}"
+         class="row justify-content-md-center pt-3">
+        <div class="alert alert-danger" role="alert">
+            Invalid code. Please try again.
+        </div>
+    </div>
+    <div th:if="${active and #strings.equals(param.result, 'activated')}" class="row justify-content-md-center pt-3">
+        <div class="alert alert-success" role="alert">
+            Your account have been activated. You can continue to <a href="/">home page</a>.
+        </div>
+    </div>
 </div>
 </body>
 </html>

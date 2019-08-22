@@ -46,8 +46,8 @@ class SecurityConfig(
     fun springSecurityDialect(): SpringSecurityDialect = SpringSecurityDialect()
 
     @Bean
-    fun authenticatedUserUpdater(persistentEntityStore: PersistentEntityStore): AuthenticatedUserUpdater =
-        AuthenticatedUserUpdater(persistentEntityStore)
+    fun authenticatedUserUpdater(): AuthenticatedUserUpdater =
+        AuthenticatedUserUpdater(userService())
 
     @Bean
     @ApplicationScope

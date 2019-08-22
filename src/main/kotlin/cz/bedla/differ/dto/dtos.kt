@@ -1,7 +1,6 @@
 package cz.bedla.differ.dto
 
-import cz.bedla.differ.utils.getPropertyAsBoolean
-import cz.bedla.differ.utils.getPropertyAsString
+import cz.bedla.differ.utils.getPropertyAs
 import cz.bedla.differ.utils.getPropertyAsZonedDateTime
 import jetbrains.exodus.entitystore.Entity
 import java.time.ZonedDateTime
@@ -29,9 +28,9 @@ data class WebPage(
 
 fun Entity.createWebPage(): WebPage {
     val id = id.toString()
-    val name = getPropertyAsString("name")
-    val url = getPropertyAsString("url")
-    val enabled = getPropertyAsBoolean("enabled")
+    val name: String = getPropertyAs("name")
+    val url: String = getPropertyAs("url")
+    val enabled: Boolean = getPropertyAs("enabled")
     val created = getPropertyAsZonedDateTime("created")
     return WebPage(id, name, url, enabled, created)
 }
@@ -45,9 +44,9 @@ data class WebPageDetail(
 )
 
 fun Entity.createWebPageDetail(): WebPageDetail {
-    val name = getPropertyAsString("name")
-    val url = getPropertyAsString("url")
-    val enabled = getPropertyAsBoolean("enabled")
+    val name: String = getPropertyAs("name")
+    val url: String = getPropertyAs("url")
+    val enabled: Boolean = getPropertyAs("enabled")
     val created = getPropertyAsZonedDateTime("created")
     return WebPageDetail(name, url, enabled, created)
 }
@@ -57,15 +56,17 @@ data class User(
     val firstName: String,
     val lastName: String,
     val email: String,
-    val pictureUrl: String
+    val pictureUrl: String,
+    val active: Boolean
 )
 
 fun Entity.createUser(): User {
-    val subject = getPropertyAsString("subject")
-    val firstName = getPropertyAsString("firstName")
-    val lastName = getPropertyAsString("lastName")
-    val email = getPropertyAsString("email")
-    val pictureUrl = getPropertyAsString("pictureUrl")
-    return User(subject, firstName, lastName, email, pictureUrl)
+    val subject: String = getPropertyAs("subject")
+    val firstName: String = getPropertyAs("firstName")
+    val lastName: String = getPropertyAs("lastName")
+    val email: String = getPropertyAs("email")
+    val pictureUrl: String = getPropertyAs("pictureUrl")
+    val active: Boolean = getPropertyAs("active")
+    return User(subject, firstName, lastName, email, pictureUrl, active)
 }
 

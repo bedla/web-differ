@@ -1,5 +1,7 @@
 package cz.bedla.differ.configuration
 
+import cz.bedla.differ.service.ActivationService
+import cz.bedla.differ.service.ActivationServiceImpl
 import cz.bedla.differ.service.WebPageService
 import cz.bedla.differ.service.WebPageServiceImpl
 import jetbrains.exodus.entitystore.PersistentEntityStore
@@ -12,4 +14,7 @@ class ServiceConfig(
 ) {
     @Bean
     fun webPageService(): WebPageService = WebPageServiceImpl(persistentEntityStore)
+
+    @Bean
+    fun activationService(): ActivationService = ActivationServiceImpl()
 }
