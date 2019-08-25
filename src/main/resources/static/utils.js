@@ -100,3 +100,24 @@ let onError = function (jqXHR, textStatus, errorThrown, actionBefore, actions) {
         perStatusAction(defaultErrorMessage, jqXHR, textStatus, errorThrown)
     }
 };
+
+let tableRow = function (tBody, text, colSpan) {
+    tBody.find("tr").remove();
+    tBody
+        .append($('<tr>')
+            .append($('<td>')
+                .attr('colspan', colSpan)
+                .text(text)
+            )
+        );
+};
+
+function coalesce() {
+    let len = arguments.length;
+    for (let i = 0; i < len; i++) {
+        if (arguments[i] !== null && arguments[i] !== undefined) {
+            return arguments[i];
+        }
+    }
+    return null;
+}

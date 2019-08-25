@@ -78,10 +78,7 @@ class DiffRunnerServiceImpl(
     }
 
     private fun StoreTransaction.saveFirstRun(webPageEntity: Entity, content: String) {
-        val entity = newEntity("Diff")
-        entity.setProperty("content", content)
-        entity.setPropertyZonedDateTime("created", ZonedDateTime.now())
-        entity.setLink("webPage", webPageEntity)
+        saveDiff(webPageEntity, content)
     }
 
     private fun StoreTransaction.saveInvalidSelectorRun(webPageEntity: Entity, selector: String) {

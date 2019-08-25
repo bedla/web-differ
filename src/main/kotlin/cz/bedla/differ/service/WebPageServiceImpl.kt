@@ -3,7 +3,9 @@ package cz.bedla.differ.service
 import cz.bedla.differ.dto.*
 import cz.bedla.differ.utils.findEntity
 import cz.bedla.differ.utils.setPropertyZonedDateTime
+import jetbrains.exodus.entitystore.Entity
 import jetbrains.exodus.entitystore.PersistentEntityStore
+import jetbrains.exodus.entitystore.StoreTransaction
 import java.time.ZonedDateTime
 
 class WebPageServiceImpl(
@@ -14,7 +16,7 @@ class WebPageServiceImpl(
         val entity = tx.findEntity(id) ?: return@computeInTransaction null
         val userEntity = tx.getUserEntity(userId)
         if (entity.getLink("user") == userEntity) {
-            entity.createWebPageDetail()
+            entity.createWebPageDetail(tx.getDiffs(entity))
         } else {
             null
         }
@@ -75,5 +77,11 @@ class WebPageServiceImpl(
         } else {
             error("User entity $entity does not belong to user '$userId'")
         }
+    }
+
+    private fun StoreTransaction.getDiffs(webPageEntity: Entity): List<Diff> {
+        val diffs = findLinks("Diff", webPageEntity, "webPage")
+        return sort("Diff", "created", diffs, false)
+            .map { it.createDiff() }
     }
 }

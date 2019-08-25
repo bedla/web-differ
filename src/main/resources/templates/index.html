@@ -86,14 +86,7 @@
 <script>
     $(function () {
         let tableSummary = function (tBody, text) {
-            tBody.find("tr").remove();
-            tBody
-                .append($('<tr>')
-                    .append($('<td>')
-                        .attr('colspan', 7)
-                        .text(text)
-                    )
-                );
+            tableRow(tBody, text, 7);
         };
 
         function createCheckIcon(enabled) {
@@ -201,8 +194,7 @@
         };
 
         let loadWebPages = function () {
-            let table = $("#tableWebPage");
-            let tBody = table.find('tbody');
+            let tBody = $("#tableWebPage").find('tbody');
 
             tableSummary(tBody, 'Loading data...');
 

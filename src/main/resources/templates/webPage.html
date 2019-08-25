@@ -23,53 +23,75 @@
             ...
         </div>
     </div>
-    <div class="row d-none" id="content">
-        <form>
-            <div class="form-group row">
-                <label for="name">Name</label>
-                <input type="text" class="form-control" id="name">
+
+    <div class="row">
+        <div class="col-sm">
+            <div class="row d-none" id="content">
+                <form>
+                    <div class="form-group row">
+                        <label for="name">Name</label>
+                        <input type="text" class="form-control" id="name">
+                    </div>
+                    <div class="form-group row">
+                        <label for="url">URL</label>
+                        <input type="text" class="form-control" id="url">
+                    </div>
+                    <div class="form-group row">
+                        <label for="url">Selector</label>
+                        <input type="text" class="form-control" id="selector">
+                    </div>
+                    <div class="form-group row">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="enabled">
+                            <label class="custom-control-label" for="enabled">Toggle to enable or
+                                disable</label>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="created">Created</label>
+                        <input type="text" class="form-control" readonly id="created">
+                    </div>
+                    <div class="form-group row">
+                        <label for="lastRun">Last run</label>
+                        <input type="text" class="form-control" readonly id="lastRun">
+                    </div>
+                    <div class="form-group row">
+                        <div class="btn-group" role="group" aria-label="Actions">
+                            <button type="button" class="btn btn-primary" id="update">
+                                <i class="far fa-edit pr-1"></i>
+                                Save
+                            </button>
+                            <button type="button" class="btn btn-primary" id="delete">
+                                <i class="far fa-trash-alt pr-1"></i>
+                                Delete
+                            </button>
+                            <button type="button" class="btn btn-primary" id="execute">
+                                <i class="far fa-play-circle pr-1"></i>
+                                Execute
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
-            <div class="form-group row">
-                <label for="url">URL</label>
-                <input type="text" class="form-control" id="url">
-            </div>
-            <div class="form-group row">
-                <label for="url">Selector</label>
-                <input type="text" class="form-control" id="selector">
-            </div>
-            <div class="form-group row">
-                <div class="custom-control custom-switch">
-                    <input type="checkbox" class="custom-control-input" id="enabled">
-                    <label class="custom-control-label" for="enabled">Toggle to enable or
-                        disable</label>
-                </div>
-            </div>
-            <div class="form-group row">
-                <label for="created">Created</label>
-                <input type="text" class="form-control" readonly id="created">
-            </div>
-            <div class="form-group row">
-                <label for="lastRun">Last run</label>
-                <input type="text" class="form-control" readonly id="lastRun">
-            </div>
-            <div class="form-group row">
-                <div class="btn-group" role="group" aria-label="Actions">
-                    <button type="button" class="btn btn-primary" id="update">
-                        <i class="far fa-edit pr-1"></i>
-                        Save
-                    </button>
-                    <button type="button" class="btn btn-primary" id="delete">
-                        <i class="far fa-trash-alt pr-1"></i>
-                        Delete
-                    </button>
-                    <button type="button" class="btn btn-primary" id="execute">
-                        <i class="far fa-play-circle pr-1"></i>
-                        Execute
-                    </button>
-                </div>
-            </div>
-        </form>
+        </div>
+        <div class="col-sm">
+            <table class="table" id="diffs">
+                <thead>
+                <tr>
+                    <th scope="col">Type</th>
+                    <th scope="col">Info</th>
+                    <th scope="col">Created</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td colspan="3">No data</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
+
 </div>
 
 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
@@ -80,16 +102,46 @@
         let webPageId = url.get('id');
         let webPageName = '...';
 
-        function fillForm(data) {
+        let tableSummary = function (tBody, text) {
+            tableRow(tBody, text, 3);
+        };
+
+        let fillForm = function (data) {
             $("#name").val(data.name);
             $("#url").val(data.url);
             $("#selector").val(data.selector);
             $("#enabled").prop('checked', data.enabled);
             $("#created").val(data.created);
             $("#lastRun").val(data.lastRun);
-        }
+            fillTable(data.diffs)
+        };
+
+        let fillTable = function (diffs) {
+            let tBody = $("#diffs").find('tbody');
+
+            tBody.find("tr").remove();
+
+            if (diffs.length === 0) {
+                tableSummary(tBody, 'No data!');
+            } else {
+                diffs.forEach(function (item, i) {
+                    let tr = $('<tr>');
+                    tr.append(
+                        $('<th>')
+                            .attr('scope', 'row')
+                            .text(item.type)
+                    );
+                    tr.append($('<td>').text(coalesce(item.content, item.invalidSelector, item.exceptionName)));
+                    tr.append($('<td>').text(item.created));
+                    tBody.append(tr);
+                });
+            }
+        };
 
         let loadWebPage = function (id) {
+            let tBody = $("#diffs").find('tbody');
+            tableSummary(tBody, 'Loading data...');
+
             $.ajax({
                 type: "GET",
                 url: `/api/user/me/web-page/${id}`,
@@ -173,7 +225,9 @@
                 event.preventDefault();
 
                 executeWebPage(webPageId, webPageName, function (data, textStatus, jqXHR) {
-                    window.location.reload();
+                    setTimeout(function () {
+                        window.location.reload();
+                    }, 2 * 1000);
                 });
             }
         });
