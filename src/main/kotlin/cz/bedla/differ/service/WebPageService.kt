@@ -6,7 +6,7 @@ import cz.bedla.differ.dto.WebPage
 import cz.bedla.differ.dto.WebPageDetail
 
 interface WebPageService {
-    fun get(id: String, userId: String): WebPageDetail?
+    fun find(id: String, userId: String): WebPageDetail?
     fun findAll(userId: String): List<WebPage>
     fun create(userId: String, request: CreateWebPage): String
     fun update(userId: String, id: String, request: UpdateWebPage)

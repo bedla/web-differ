@@ -1,6 +1,8 @@
 package cz.bedla.differ.utils
 
 import jetbrains.exodus.entitystore.Entity
+import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException
+import jetbrains.exodus.entitystore.StoreTransaction
 import org.springframework.security.oauth2.core.user.OAuth2User
 import java.time.Instant
 import java.time.ZoneId
@@ -30,3 +32,11 @@ fun OAuth2User.getAttribute(key: String): String {
 fun OAuth2User.findAttribute(key: String): String? {
     return attributes[key] as? String
 }
+
+fun StoreTransaction.findEntity(id: String): Entity? =
+    try {
+        getEntity(toEntityId(id))
+    } catch (e: EntityRemovedInDatabaseException) {
+        null
+    }
+

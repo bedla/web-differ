@@ -13,6 +13,40 @@
 <div class="container">
     <div th:replace="layout :: header"></div>
     <h1>WebPage</h1>
+    <div class="row" id="loading">
+        <div class="alert alert-info" role="info">Loading...</div>
+    </div>
+    <div class="row d-none" id="alert">
+        <div class="alert alert-danger" role="alert">
+            ...
+        </div>
+    </div>
+    <div class="row d-none" id="content">
+        <form>
+            <div class="form-group row">
+                <label for="name">Name</label>
+                <input type="text" class="form-control" id="name">
+            </div>
+            <div class="form-group row">
+                <label for="url">URL</label>
+                <input type="text" class="form-control" id="url">
+            </div>
+            <div class="form-group row">
+                <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="enabled">
+                    <label class="custom-control-label" for="enabled">Toggle to enable or
+                        disable</label>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="created">Created</label>
+                <input type="text" readonly class="form-control-plaintext" id="created">
+            </div>
+            <div class="form-group row">
+                <button type="button" class="btn btn-primary" id="update">Update</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
@@ -22,6 +56,13 @@
         let url = new URLSearchParams(window.location.search);
         let webPageId = url.get('id');
 
+        function fillForm(data) {
+            $("#name").val(data.name);
+            $("#url").val(data.url);
+            $("#enabled").prop('checked', data.enabled);
+            $("#created").val(data.created);
+        }
+
         let loadWebPage = function (id) {
             $.ajax({
                 type: "GET",
@@ -29,14 +70,62 @@
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
                 success: function (data) {
-                    console.log(data);
+                    $("#loading").addClass('d-none');
+                    $("#content").removeClass('d-none');
+                    fillForm(data);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
+                    $("#loading").addClass('d-none');
+                    console.log(jqXHR.status);
+                    console.log(jqXHR.responseText);
                     console.log(textStatus);
                     console.log(errorThrown);
+                    let errorMessage = "Don't panic, there is error in log.";
+                    if (jqXHR.status === 404) {
+                        errorMessage = 'WebPage not found.';
+                    }
+                    $("#alert").removeClass('d-none');
+                    $("#alert div").text(errorMessage);
                 }
             })
         };
+
+        let createWebPagePayload = function () {
+            let name = $("#name").val() || '';
+            let url = $("#url").val() || '';
+            let enabled = $("#enabled:checked").val();
+
+            return {
+                name: name,
+                url: url,
+                enabled: enabled === 'on'
+            };
+        };
+
+        $("#update").on({
+            click: function (event) {
+                event.preventDefault();
+
+                $.ajax({
+                    type: "POST",
+                    url: `/api/user/me/web-page/${webPageId}`,
+                    data: JSON.stringify(createWebPagePayload()),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "text",
+                    success: function (data) {
+                        window.location.reload();
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.log(jqXHR.status);
+                        console.log(jqXHR.responseText);
+                        console.log(textStatus);
+                        console.log(errorThrown);
+                        window.alert(`Error while updating WebPage.`);
+                    }
+                });
+            }
+        });
+
 
         loadWebPage(webPageId);
     })

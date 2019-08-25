@@ -22,7 +22,7 @@ class UserWebPageController(
     fun get(
         @PathVariable("id") id: String
     ): ResponseEntity<WebPageDetail?> {
-        val result = webPageService.get(id, userService.currentAuthenticatedUserId())
+        val result = webPageService.find(id, userService.currentAuthenticatedUserId())
         return if (result == null)
             ResponseEntity.notFound().build()
         else
