@@ -19,7 +19,7 @@ class WebPageServiceImpl(
         }
     }
 
-    override fun findAll(userId: String): List<WebPage> = persistentEntityStore.computeInTransaction { tx ->
+    override fun findAll(userId: String): List<WebPageSimple> = persistentEntityStore.computeInTransaction { tx ->
         val userEntity = tx.getUserEntity(userId)
         val webPages = tx.findLinks("WebPage", userEntity, "user")
         tx.sort("WebPage", "name", webPages, true)
@@ -33,6 +33,7 @@ class WebPageServiceImpl(
         val entity = tx.newEntity("WebPage")
         entity.setProperty("name", request.name)
         entity.setProperty("url", request.url)
+        entity.setProperty("selector", request.selector)
         entity.setProperty("enabled", request.enabled)
         entity.setPropertyZonedDateTime("created", ZonedDateTime.now())
         val userEntity = tx.getUserEntity(userId)
@@ -46,6 +47,7 @@ class WebPageServiceImpl(
         if (entity.getLink("user") == userEntity) {
             entity.setProperty("name", request.name)
             entity.setProperty("url", request.url)
+            entity.setProperty("selector", request.selector)
             entity.setProperty("enabled", request.enabled)
             true
         } else {

@@ -2,7 +2,7 @@ package cz.bedla.differ.rest
 
 import cz.bedla.differ.dto.CreateWebPage
 import cz.bedla.differ.dto.UpdateWebPage
-import cz.bedla.differ.dto.WebPage
+import cz.bedla.differ.dto.WebPageSimple
 import cz.bedla.differ.dto.WebPageDetail
 import cz.bedla.differ.service.UserService
 import cz.bedla.differ.service.WebPageService
@@ -31,7 +31,7 @@ class UserWebPageController(
 
     @PreAuthorize("isActivated()")
     @GetMapping("/user/me/web-page")
-    fun list(): List<WebPage> {
+    fun list(): List<WebPageSimple> {
         return webPageService.findAll(userService.currentAuthenticatedUserId())
     }
 

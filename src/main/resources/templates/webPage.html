@@ -8,6 +8,7 @@
     <link href="/webjars/font-awesome/5.10.1/css/all.css" rel="stylesheet">
     <script src="/webjars/jquery/3.3.1/jquery.js"></script>
     <script src="/webjars/bootstrap/4.3.1/js/bootstrap.js"></script>
+    <script src="/static/bootbox-v5.3.2/bootbox.all.min.js"></script>
 </head>
 <body>
 <div class="container">
@@ -30,6 +31,10 @@
             <div class="form-group row">
                 <label for="url">URL</label>
                 <input type="text" class="form-control" id="url">
+            </div>
+            <div class="form-group row">
+                <label for="url">Selector</label>
+                <input type="text" class="form-control" id="selector">
             </div>
             <div class="form-group row">
                 <div class="custom-control custom-switch">
@@ -59,6 +64,7 @@
         function fillForm(data) {
             $("#name").val(data.name);
             $("#url").val(data.url);
+            $("#selector").val(data.selector);
             $("#enabled").prop('checked', data.enabled);
             $("#created").val(data.created);
         }
@@ -93,11 +99,13 @@
         let createWebPagePayload = function () {
             let name = $("#name").val() || '';
             let url = $("#url").val() || '';
+            let selector = $("#selector").val() || '';
             let enabled = $("#enabled:checked").val();
 
             return {
                 name: name,
                 url: url,
+                selector: selector,
                 enabled: enabled === 'on'
             };
         };
@@ -120,7 +128,11 @@
                         console.log(jqXHR.responseText);
                         console.log(textStatus);
                         console.log(errorThrown);
-                        window.alert(`Error while updating WebPage.`);
+                        let errorMessage = "Don't panic, there is error in log.";
+                        if (jqXHR.status === 404) {
+                            errorMessage = 'WebPage not found.';
+                        }
+                        bootbox.alert(errorMessage)
                     }
                 });
             }

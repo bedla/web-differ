@@ -8,17 +8,18 @@ import java.time.ZonedDateTime
 data class CreateWebPage(
     val name: String,
     val url: String,
+    val selector: String,
     val enabled: Boolean
 )
-
 
 data class UpdateWebPage(
     val name: String,
     val url: String,
+    val selector: String,
     val enabled: Boolean
 )
 
-data class WebPage(
+data class WebPageSimple(
     val id: String,
     val name: String,
     val url: String,
@@ -26,19 +27,20 @@ data class WebPage(
     val created: ZonedDateTime
 )
 
-fun Entity.createWebPage(): WebPage {
+fun Entity.createWebPage(): WebPageSimple {
     val id = id.toString()
     val name: String = getPropertyAs("name")
     val url: String = getPropertyAs("url")
     val enabled: Boolean = getPropertyAs("enabled")
     val created = getPropertyAsZonedDateTime("created")
-    return WebPage(id, name, url, enabled, created)
+    return WebPageSimple(id, name, url, enabled, created)
 }
 
 
 data class WebPageDetail(
     val name: String,
     val url: String,
+    val selector: String,
     val enabled: Boolean,
     val created: ZonedDateTime
 )
@@ -46,9 +48,10 @@ data class WebPageDetail(
 fun Entity.createWebPageDetail(): WebPageDetail {
     val name: String = getPropertyAs("name")
     val url: String = getPropertyAs("url")
+    val selector: String = getPropertyAs("selector")
     val enabled: Boolean = getPropertyAs("enabled")
     val created = getPropertyAsZonedDateTime("created")
-    return WebPageDetail(name, url, enabled, created)
+    return WebPageDetail(name, url, selector, enabled, created)
 }
 
 data class User(

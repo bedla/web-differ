@@ -60,6 +60,10 @@
                     <input type="text" class="form-control" id="modalAddWebPageUrl">
                 </div>
                 <div class="form-group">
+                    <label for="modalAddWebPageSelector">Selector</label>
+                    <input type="text" class="form-control" id="modalAddWebPageSelector">
+                </div>
+                <div class="form-group">
                     <div class="custom-control custom-switch">
                         <input type="checkbox" class="custom-control-input" id="modalAddWebPageEnabled">
                         <label class="custom-control-label" for="modalAddWebPageEnabled">Toggle to enable or
@@ -234,11 +238,13 @@
         let createWebPagePayload = function () {
             let name = $("#modalAddWebPageName").val() || '';
             let url = $("#modalAddWebPageUrl").val() || '';
+            let selector = $("#modalAddWebPageSelector").val() || '';
             let enabled = $("#modalAddWebPageEnabled:checked").val();
 
             return {
                 name: name,
                 url: url,
+                selector: selector,
                 enabled: enabled === 'on'
             };
         };
