@@ -62,6 +62,8 @@ class WebPageServiceImpl(
         val entity = tx.findEntity(id) ?: return@computeInTransaction false
         val userEntity = tx.getUserEntity(userId)
         if (entity.getLink("user") == userEntity) {
+            val diffs = tx.findLinks("Diff", entity, "webPage")
+            diffs.forEach { it.delete() }
             entity.delete()
         } else {
             error("User entity $entity does not belong to user '$userId'")
