@@ -9,6 +9,7 @@
     <script src="/webjars/jquery/3.3.1/jquery.js"></script>
     <script src="/webjars/bootstrap/4.3.1/js/bootstrap.js"></script>
     <script src="/static/bootbox-v5.3.2/bootbox.all.min.js"></script>
+    <script src="/static/utils.js"></script>
 </head>
 <body>
 <div class="container">
@@ -48,7 +49,20 @@
                 <input type="text" readonly class="form-control-plaintext" id="created">
             </div>
             <div class="form-group row">
-                <button type="button" class="btn btn-primary" id="update">Update</button>
+                <div class="btn-group" role="group" aria-label="Actions">
+                    <button type="button" class="btn btn-primary" id="update">
+                        <i class="far fa-edit pr-1"></i>
+                        Save
+                    </button>
+                    <button type="button" class="btn btn-primary" id="delete">
+                        <i class="far fa-trash-alt pr-1"></i>
+                        Delete
+                    </button>
+                    <button type="button" class="btn btn-primary" id="execute">
+                        <i class="far fa-play-circle pr-1"></i>
+                        Execute
+                    </button>
+                </div>
             </div>
         </form>
     </div>
@@ -60,6 +74,7 @@
     $(function () {
         let url = new URLSearchParams(window.location.search);
         let webPageId = url.get('id');
+        let webPageName = '...';
 
         function fillForm(data) {
             $("#name").val(data.name);
@@ -78,20 +93,23 @@
                 success: function (data) {
                     $("#loading").addClass('d-none');
                     $("#content").removeClass('d-none');
+                    webPageName = data;
                     fillForm(data);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
-                    $("#loading").addClass('d-none');
-                    console.log(jqXHR.status);
-                    console.log(jqXHR.responseText);
-                    console.log(textStatus);
-                    console.log(errorThrown);
-                    let errorMessage = "Don't panic, there is error in log.";
-                    if (jqXHR.status === 404) {
-                        errorMessage = 'WebPage not found.';
-                    }
-                    $("#alert").removeClass('d-none');
-                    $("#alert div").text(errorMessage);
+                    onError(jqXHR, textStatus, errorThrown,
+                        function () {
+                            $("#loading").addClass('d-none');
+                        }, {
+                            404: function () {
+                                $("#alert").removeClass('d-none');
+                                $("#alert div").text('WebPage not found.');
+                            },
+                            '*': function (defaultErrorMessage) {
+                                $("#alert").removeClass('d-none');
+                                $("#alert div").text(defaultErrorMessage);
+                            }
+                        });
                 }
             })
         };
@@ -124,20 +142,36 @@
                         window.location.reload();
                     },
                     error: function (jqXHR, textStatus, errorThrown) {
-                        console.log(jqXHR.status);
-                        console.log(jqXHR.responseText);
-                        console.log(textStatus);
-                        console.log(errorThrown);
-                        let errorMessage = "Don't panic, there is error in log.";
-                        if (jqXHR.status === 404) {
-                            errorMessage = 'WebPage not found.';
-                        }
-                        bootbox.alert(errorMessage)
+                        onError(jqXHR, textStatus, errorThrown, jQuery.noop(), {
+                            404: function () {
+                                bootbox.alert('WebPage not found.');
+                            },
+                            '*': function (defaultErrorMessage) {
+                                bootbox.alert(defaultErrorMessage);
+                            }
+                        });
                     }
                 });
             }
         });
+        $("#delete").on({
+            click: function (event) {
+                event.preventDefault();
 
+                deleteWebPage(webPageId, webPageName, function (data, textStatus, jqXHR) {
+                    window.location.assign('/');
+                });
+            }
+        });
+        $("#execute").on({
+            click: function (event) {
+                event.preventDefault();
+
+                executeWebPage(webPageId, webPageName, function (data, textStatus, jqXHR) {
+                    window.location.reload();
+                });
+            }
+        });
 
         loadWebPage(webPageId);
     })

@@ -2,8 +2,8 @@ package cz.bedla.differ.service
 
 import cz.bedla.differ.dto.CreateWebPage
 import cz.bedla.differ.dto.UpdateWebPage
-import cz.bedla.differ.dto.WebPageSimple
 import cz.bedla.differ.dto.WebPageDetail
+import cz.bedla.differ.dto.WebPageSimple
 
 interface WebPageService {
     fun find(id: String, userId: String): WebPageDetail?
@@ -11,4 +11,5 @@ interface WebPageService {
     fun create(userId: String, request: CreateWebPage): String
     fun update(userId: String, id: String, request: UpdateWebPage): Boolean
     fun delete(userId: String, id: String): Boolean
+    fun execute(userId: String, id: String): Boolean
 }

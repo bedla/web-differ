@@ -70,4 +70,17 @@ class UserWebPageController(
             ResponseEntity.notFound()
         }.build()
     }
+
+    @PreAuthorize("isActivated()")
+    @PostMapping("/user/me/web-page/{id}/execute")
+    fun execute(
+        @PathVariable("id") id: String
+    ): ResponseEntity<Any> {
+        val executed = webPageService.execute(userService.currentAuthenticatedUserId(), id)
+        return if (executed) {
+            ResponseEntity.noContent()
+        } else {
+            ResponseEntity.notFound()
+        }.build()
+    }
 }

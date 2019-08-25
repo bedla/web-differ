@@ -64,4 +64,14 @@ class WebPageServiceImpl(
             error("User entity $entity does not belong to user '$userId'")
         }
     }
+
+    override fun execute(userId: String, id: String): Boolean = persistentEntityStore.computeInTransaction { tx ->
+        val entity = tx.findEntity(id) ?: return@computeInTransaction false
+        val userEntity = tx.getUserEntity(userId)
+        if (entity.getLink("user") == userEntity) {
+            false
+        } else {
+            error("User entity $entity does not belong to user '$userId'")
+        }
+    }
 }
