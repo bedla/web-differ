@@ -19,7 +19,6 @@ class WebPageServiceImpl(
         }
     }
 
-
     override fun findAll(userId: String): List<WebPage> = persistentEntityStore.computeInTransaction { tx ->
         val userEntity = tx.getUserEntity(userId)
         val webPages = tx.findLinks("WebPage", userEntity, "user")
@@ -41,13 +40,24 @@ class WebPageServiceImpl(
         entity.id.toString()
     }
 
-    override fun update(userId: String, id: String, request: UpdateWebPage): Unit = persistentEntityStore.computeInTransaction { tx ->
-        val entity = tx.getEntity(tx.toEntityId(id))
+    override fun update(userId: String, id: String, request: UpdateWebPage): Boolean = persistentEntityStore.computeInTransaction { tx ->
+        val entity = tx.findEntity(id) ?: return@computeInTransaction false
         val userEntity = tx.getUserEntity(userId)
         if (entity.getLink("user") == userEntity) {
             entity.setProperty("name", request.name)
             entity.setProperty("url", request.url)
             entity.setProperty("enabled", request.enabled)
+            true
+        } else {
+            error("User entity $entity does not belong to user '$userId'")
+        }
+    }
+
+    override fun delete(userId: String, id: String): Boolean = persistentEntityStore.computeInTransaction { tx ->
+        val entity = tx.findEntity(id) ?: return@computeInTransaction false
+        val userEntity = tx.getUserEntity(userId)
+        if (entity.getLink("user") == userEntity) {
+            entity.delete()
         } else {
             error("User entity $entity does not belong to user '$userId'")
         }

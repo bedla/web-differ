@@ -49,7 +49,25 @@ class UserWebPageController(
     fun update(
         @PathVariable("id") id: String,
         @RequestBody updateRequest: UpdateWebPage
-    ) {
-        webPageService.update(userService.currentAuthenticatedUserId(), id, updateRequest)
+    ): ResponseEntity<Any> {
+        val updated = webPageService.update(userService.currentAuthenticatedUserId(), id, updateRequest)
+        return if (updated) {
+            ResponseEntity.noContent()
+        } else {
+            ResponseEntity.notFound()
+        }.build()
+    }
+
+    @PreAuthorize("isActivated()")
+    @DeleteMapping("/user/me/web-page/{id}")
+    fun delete(
+        @PathVariable("id") id: String
+    ): ResponseEntity<Any> {
+        val deleted = webPageService.delete(userService.currentAuthenticatedUserId(), id)
+        return if (deleted) {
+            ResponseEntity.noContent()
+        } else {
+            ResponseEntity.notFound()
+        }.build()
     }
 }

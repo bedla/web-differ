@@ -8,6 +8,7 @@
     <link href="/webjars/font-awesome/5.10.1/css/all.css" rel="stylesheet">
     <script src="/webjars/jquery/3.3.1/jquery.js"></script>
     <script src="/webjars/bootstrap/4.3.1/js/bootstrap.js"></script>
+    <script src="/static/bootbox-v5.3.2/bootbox.all.min.js"></script>
 </head>
 <body>
 <div class="container">
@@ -33,8 +34,8 @@
         </table>
     </div>
     <div class="row pl-5 pr-5 pt-0 pb-1">
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalAddWebPage">Add WebPage to
-            monitor
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalAddWebPage">
+            <i class="far fa-plus-square pr-2"></i>Add WebPage to monitor
         </button>
     </div>
 </div>
@@ -99,6 +100,7 @@
                     data.forEach(function (item, i) {
                             let tr = $('<tr>');
                             tr.data('webPageId', item.id);
+                            tr.data('webPageName', item.name);
                             tr.append(
                                 $('<th>')
                                     .attr('scope', 'row')
@@ -108,24 +110,88 @@
                             tr.append($('<td>').text(item.url));
                             tr.append($('<td>').text(item.created));
                             tr.append($('<td>').text(item.enabled));
-                            tr.append($('<td>').append(
-                                $('<button>')
-                                    .attr('type', 'button')
-                                    .addClass('btn')
-                                    .addClass('btn-primary')
-                                    .addClass('btn-sm')
-                                    .text('edit')
-                                    .on({
-                                        click: function (event) {
-                                            event.preventDefault();
+                            let btnEdit = $('<button>')
+                                .attr('type', 'button')
+                                .addClass('btn')
+                                .addClass('btn-primary')
+                                .addClass('btn-sm')
+                                .append($('<i>').addClass("far").addClass("fa-edit").addClass("pr-1"))
+                                .append('Edit')
+                                .on({
+                                    click: function (event) {
+                                        event.preventDefault();
 
-                                            let webPageId = $(event.target).closest('tr').data('webPageId');
-                                            if (webPageId !== undefined) {
-                                                window.location.assign('/web-page?id=' + webPageId);
-                                            }
+                                        let webPageId = $(event.target).closest('tr').data('webPageId');
+                                        if (webPageId !== undefined) {
+                                            window.location.assign('/web-page?id=' + webPageId);
                                         }
-                                    })
-                            ));
+                                    }
+                                });
+                            let btnDelete = $('<button>')
+                                .attr('type', 'button')
+                                .addClass('btn')
+                                .addClass('btn-primary')
+                                .addClass('btn-sm')
+                                .append($('<i>').addClass("far").addClass("fa-trash-alt").addClass("pr-1"))
+                                .append('Delete')
+                                .on({
+                                    click: function (event) {
+                                        event.preventDefault();
+
+                                        let row = $(event.target).closest('tr');
+                                        let webPageId = row.data('webPageId');
+                                        let webPageName = row.data('webPageName');
+                                        if (webPageId !== undefined) {
+                                            let name = $("span").text(webPageName).html();
+                                            bootbox.confirm({
+                                                title: 'Delete WebPage?',
+                                                message: `Do you really want to delete WebPage '${name}'!`,
+                                                buttons: {
+                                                    cancel: {
+                                                        label: 'No',
+                                                        className: 'btn-light'
+                                                    },
+                                                    confirm: {
+                                                        label: 'Delete',
+                                                        className: 'btn-danger'
+                                                    }
+                                                },
+                                                callback: function (result) {
+                                                    if (result) {
+                                                        $.ajax({
+                                                            type: "DELETE",
+                                                            url: `/api/user/me/web-page/${webPageId}`,
+                                                            contentType: "application/json; charset=utf-8",
+                                                            dataType: "json",
+                                                            success: function (data, textStatus, jqXHR) {
+                                                                window.location.assign('/');
+                                                            },
+                                                            error: function (jqXHR, textStatus, errorThrown) {
+                                                                console.log(jqXHR.status);
+                                                                console.log(jqXHR.responseText);
+                                                                console.log(textStatus);
+                                                                console.log(errorThrown);
+                                                                let errorMessage = "Don't panic, there is error in log.";
+                                                                if (jqXHR.status === 404) {
+                                                                    errorMessage = 'WebPage not found.';
+                                                                }
+                                                                bootbox.alert(errorMessage)
+                                                            }
+                                                        })
+
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    }
+                                });
+                            let buttons = $('<div>')
+                                .addClass('btn-group')
+                                .attr("role", "group")
+                                .attr("aria-label", "Actions")
+                                .append(btnEdit)
+                                .append(btnDelete);
+                            tr.append($('<td>').append(buttons));
                             tBody.append(tr);
                         }
                     );
