@@ -7,7 +7,8 @@ import jetbrains.exodus.entitystore.PersistentEntityStore
 import java.time.ZonedDateTime
 
 class WebPageServiceImpl(
-    private val persistentEntityStore: PersistentEntityStore
+    private val persistentEntityStore: PersistentEntityStore,
+    private val diffRunnerExecutor: DiffRunnerExecutor
 ) : WebPageService {
     override fun find(id: String, userId: String): WebPageDetail? = persistentEntityStore.computeInTransaction { tx ->
         val entity = tx.findEntity(id) ?: return@computeInTransaction null
@@ -69,7 +70,8 @@ class WebPageServiceImpl(
         val entity = tx.findEntity(id) ?: return@computeInTransaction false
         val userEntity = tx.getUserEntity(userId)
         if (entity.getLink("user") == userEntity) {
-            false
+            diffRunnerExecutor.scheduleNow(id)
+            true
         } else {
             error("User entity $entity does not belong to user '$userId'")
         }

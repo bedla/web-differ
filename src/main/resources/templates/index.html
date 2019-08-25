@@ -23,13 +23,14 @@
                 <th scope="col">Name</th>
                 <th scope="col">Url</th>
                 <th scope="col">Created</th>
+                <th scope="col">Last run</th>
                 <th scope="col">Enabled</th>
                 <th scope="col">Actions</th>
             </tr>
             </thead>
             <tbody>
             <tr>
-                <td colspan="6">No data</td>
+                <td colspan="7">No data</td>
             </tr>
             </tbody>
         </table>
@@ -89,7 +90,7 @@
             tBody
                 .append($('<tr>')
                     .append($('<td>')
-                        .attr('colspan', 6)
+                        .attr('colspan', 7)
                         .text(text)
                     )
                 );
@@ -114,6 +115,7 @@
                             tr.append($('<td>').text(item.name));
                             tr.append($('<td>').text(item.url));
                             tr.append($('<td>').text(item.created));
+                            tr.append($('<td>').text(item.lastRun));
                             tr.append($('<td>').text(item.enabled));
                             let btnEdit = $('<button>')
                                 .attr('type', 'button')

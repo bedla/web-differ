@@ -16,14 +16,19 @@ inline fun <reified T> Entity.getPropertyAs(key: String): T {
     return findPropertyAs(key) ?: error("Unable to find property '$key' in entity $this")
 }
 
-fun Entity.getPropertyAsZonedDateTime(key: String): ZonedDateTime {
-    val value: Long = getPropertyAs(key)
-    val instant = Instant.ofEpochSecond(value);
+fun Entity.getPropertyAsZonedDateTime(key: String): ZonedDateTime =
+    findPropertyAsZonedDateTime(key)
+        ?: error("Unable to find ZonedDateTime property '$key' in entity $this")
+
+fun Entity.findPropertyAsZonedDateTime(key: String): ZonedDateTime? {
+    val value: Long = findPropertyAs(key) ?: return null
+    val instant = Instant.ofEpochMilli(value);
     // TODO make time-zone configurable
     return ZonedDateTime.ofInstant(instant, ZoneId.of("Europe/Prague"));
 }
 
-fun Entity.setPropertyZonedDateTime(key: String, value: ZonedDateTime): Boolean = setProperty(key, value.toEpochSecond())
+fun Entity.setPropertyZonedDateTime(key: String, value: ZonedDateTime): Boolean =
+    setProperty(key, value.toInstant().toEpochMilli())
 
 fun OAuth2User.getAttribute(key: String): String {
     return attributes[key] as? String ?: error("no '$key' found at attributes $this")

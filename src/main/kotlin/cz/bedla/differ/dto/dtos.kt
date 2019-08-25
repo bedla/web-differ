@@ -1,5 +1,6 @@
 package cz.bedla.differ.dto
 
+import cz.bedla.differ.utils.findPropertyAsZonedDateTime
 import cz.bedla.differ.utils.getPropertyAs
 import cz.bedla.differ.utils.getPropertyAsZonedDateTime
 import jetbrains.exodus.entitystore.Entity
@@ -24,7 +25,8 @@ data class WebPageSimple(
     val name: String,
     val url: String,
     val enabled: Boolean,
-    val created: ZonedDateTime
+    val created: ZonedDateTime,
+    val lastRun: ZonedDateTime?
 )
 
 fun Entity.createWebPage(): WebPageSimple {
@@ -33,7 +35,8 @@ fun Entity.createWebPage(): WebPageSimple {
     val url: String = getPropertyAs("url")
     val enabled: Boolean = getPropertyAs("enabled")
     val created = getPropertyAsZonedDateTime("created")
-    return WebPageSimple(id, name, url, enabled, created)
+    val lastRun = findPropertyAsZonedDateTime("lastRun")
+    return WebPageSimple(id, name, url, enabled, created, lastRun)
 }
 
 
@@ -42,7 +45,8 @@ data class WebPageDetail(
     val url: String,
     val selector: String,
     val enabled: Boolean,
-    val created: ZonedDateTime
+    val created: ZonedDateTime,
+    val lastRun: ZonedDateTime?
 )
 
 fun Entity.createWebPageDetail(): WebPageDetail {
@@ -51,7 +55,8 @@ fun Entity.createWebPageDetail(): WebPageDetail {
     val selector: String = getPropertyAs("selector")
     val enabled: Boolean = getPropertyAs("enabled")
     val created = getPropertyAsZonedDateTime("created")
-    return WebPageDetail(name, url, selector, enabled, created)
+    val lastRun = findPropertyAsZonedDateTime("lastRun")
+    return WebPageDetail(name, url, selector, enabled, created, lastRun)
 }
 
 data class User(
@@ -72,4 +77,3 @@ fun Entity.createUser(): User {
     val active: Boolean = getPropertyAs("active")
     return User(subject, firstName, lastName, email, pictureUrl, active)
 }
-
