@@ -96,6 +96,12 @@
                 );
         };
 
+        function createCheckIcon(enabled) {
+            return $('<i>')
+                .addClass("far")
+                .addClass(enabled ? "fa-check-square" : "fa-square");
+        }
+
         let fillTable = function (tBody, data) {
             if (Array.isArray(data)) {
                 tBody.find("tr").remove();
@@ -116,7 +122,7 @@
                             tr.append($('<td>').text(item.url));
                             tr.append($('<td>').text(item.created));
                             tr.append($('<td>').text(item.lastRun));
-                            tr.append($('<td>').text(item.enabled));
+                            tr.append($('<td>').append(createCheckIcon(item.enabled)));
                             let btnEdit = $('<button>')
                                 .attr('type', 'button')
                                 .addClass('btn')
