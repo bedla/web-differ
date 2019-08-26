@@ -112,8 +112,8 @@
             $("#url").val(data.url);
             $("#selector").val(data.selector);
             $("#enabled").prop('checked', data.enabled);
-            $("#created").val(formatZonedDateTime(data.created));
-            $("#lastRun").val(formatZonedDateTime(data.lastRun));
+            $("#created").val(formatZonedDateTimeToStr(data.created));
+            $("#lastRun").val(formatZonedDateTimeToStr(data.lastRun));
         };
 
         let exceptionInfo = function (item) {
@@ -161,7 +161,7 @@
                             .append(itemIcon(item))
                     );
                     tr.append($('<td>').text(coalesce(item.content, item.selector, exceptionInfo(item))));
-                    tr.append($('<td>').text(item.created));
+                    tr.append($('<td>').append(createDateTimeSpan(formatZonedDateTime(item.created))));
                     tBody.append(tr);
                 });
             }

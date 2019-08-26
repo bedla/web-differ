@@ -122,7 +122,31 @@ function coalesce() {
     return null;
 }
 
-let formatZonedDateTime = function (value) {
+let formatZonedDateTimeToStr = function (value) {
     let result = moment(value, 'YYYY-MM-DDTHH:mm:ss:SSZ');
     return result.isValid() ? result.format("YYYY-MM-DD HH:mm:ss") : '';
+};
+
+let formatZonedDateTime = function (value) {
+    let result = moment(value, 'YYYY-MM-DDTHH:mm:ss:SSZ');
+    if (result.isValid()) {
+        let items = result.format("YYYY-MM-DD HH:mm:ss").split(' ');
+        return {
+            date: items[0],
+            time: items[1]
+        }
+    } else {
+        return null;
+    }
+};
+
+let createDateTimeSpan = function (dateTime) {
+    if (dateTime === null) {
+        return $('<span>');
+    } else {
+        return $('<span>')
+            .append($('<span>').addClass("text-nowrap").text(dateTime.date))
+            .append(' ')
+            .append($('<span>').addClass("text-nowrap").text(dateTime.time));
+    }
 };

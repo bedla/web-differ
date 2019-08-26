@@ -114,8 +114,8 @@
                                 );
                                 tr.append($('<td>').text(item.name));
                                 tr.append($('<td>').text(item.url));
-                                tr.append($('<td>').text(formatZonedDateTime(item.created)));
-                                tr.append($('<td>').text(formatZonedDateTime(item.lastRun)));
+                                tr.append($('<td>').append(createDateTimeSpan(formatZonedDateTime(item.created))));
+                                tr.append($('<td>').append(createDateTimeSpan(formatZonedDateTime(item.lastRun))));
                                 tr.append($('<td>').append(createCheckIcon(item.enabled)));
                                 let btnEdit = $('<button>')
                                     .attr('type', 'button')
