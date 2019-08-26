@@ -3,6 +3,7 @@ package cz.bedla.differ.configuration
 import cz.bedla.differ.security.AuthenticatedUserUpdater
 import cz.bedla.differ.service.UserService
 import cz.bedla.differ.service.UserServiceImpl
+import cz.bedla.differ.utils.notActuatorMatcher
 import jetbrains.exodus.entitystore.PersistentEntityStore
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -21,20 +22,24 @@ class SecurityConfig(
     private val persistentEntityStore: PersistentEntityStore
 ) : WebSecurityConfigurerAdapter() {
     override fun configure(http: HttpSecurity) {
-        http.authorizeRequests()
+        http.requestMatcher(notActuatorMatcher())
+            .authorizeRequests()
             .antMatchers("/login").permitAll()
             .anyRequest().authenticated()
-        http.oauth2Login()
+            .and()
+            .oauth2Login()
             .loginPage("/login")
-        http.logout()
+            .and()
+            .csrf()
+            .ignoringAntMatchers("/api/**")
+            .and()
+            .logout()
             .logoutRequestMatcher(OrRequestMatcher(
                 AntPathRequestMatcher("/logout", "GET"),
                 AntPathRequestMatcher("/logout", "POST"),
                 AntPathRequestMatcher("/logout", "PUT"),
                 AntPathRequestMatcher("/logout", "DELETE")
             ))
-        http.csrf()
-            .ignoringAntMatchers("/api/**")
     }
 
     override fun configure(web: WebSecurity) {

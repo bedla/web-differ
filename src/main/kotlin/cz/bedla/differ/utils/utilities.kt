@@ -5,7 +5,10 @@ import cz.bedla.differ.dto.createDiff
 import jetbrains.exodus.entitystore.Entity
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException
 import jetbrains.exodus.entitystore.StoreTransaction
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest
 import org.springframework.security.oauth2.core.user.OAuth2User
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher
+import org.springframework.security.web.util.matcher.RequestMatcher
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -58,3 +61,7 @@ fun ZonedDateTime.prettyToString(): String =
     DateTimeFormatter
         .ofPattern("yyyy-MM-dd hh:mm:ss")
         .format(toLocalDateTime())
+
+fun notActuatorMatcher(): RequestMatcher = NegatedRequestMatcher(actuatorMatcher())
+
+fun actuatorMatcher(): RequestMatcher = EndpointRequest.toAnyEndpoint()
