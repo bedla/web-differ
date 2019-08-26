@@ -6,9 +6,13 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" href="/webjars/bootstrap/4.3.1/css/bootstrap.css">
     <link href="/webjars/font-awesome/5.10.1/css/all.css" rel="stylesheet">
+    <link href="/webjars/datatables/1.10.19/css/jquery.dataTables.css" rel="stylesheet">
+    <link href="/webjars/datatables/1.10.19/css/dataTables.bootstrap4.css" rel="stylesheet">
     <script src="/webjars/jquery/3.3.1/jquery.js"></script>
     <script src="/webjars/bootstrap/4.3.1/js/bootstrap.js"></script>
     <script src="/webjars/momentjs/2.24.0/moment.js"></script>
+    <script src="/webjars/datatables/1.10.19/js/jquery.dataTables.js"></script>
+    <script src="/webjars/datatables/1.10.19/js/dataTables.bootstrap4.js"></script>
     <script src="/static/bootbox-v5.3.2/bootbox.all.min.js"></script>
     <script src="/static/utils.js"></script>
 </head>
@@ -187,6 +191,14 @@
                                 tBody.append(tr);
                             }
                         );
+                        $('#tableWebPage').DataTable({
+                            "paging": true,
+                            "ordering": false,
+                            "info": false,
+                            "scrollX": true,
+                            "scroller": true,
+                            "searching": false
+                        });
                     }
                 } else {
                     console.log(data);
