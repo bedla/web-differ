@@ -8,6 +8,7 @@
     <link href="/webjars/font-awesome/5.10.1/css/all.css" rel="stylesheet">
     <script src="/webjars/jquery/3.3.1/jquery.js"></script>
     <script src="/webjars/bootstrap/4.3.1/js/bootstrap.js"></script>
+    <script src="/webjars/momentjs/2.24.0/moment.js"></script>
     <script src="/static/bootbox-v5.3.2/bootbox.all.min.js"></script>
     <script src="/static/utils.js"></script>
 </head>
@@ -96,102 +97,103 @@
         }
 
         let fillTable = function (tBody, data) {
-            if (Array.isArray(data)) {
-                tBody.find("tr").remove();
+                if (Array.isArray(data)) {
+                    tBody.find("tr").remove();
 
-                if (data.length === 0) {
-                    tableSummary(tBody, 'No data!');
+                    if (data.length === 0) {
+                        tableSummary(tBody, 'No data!');
+                    } else {
+                        data.forEach(function (item, i) {
+                                let tr = $('<tr>');
+                                tr.data('webPageId', item.id);
+                                tr.data('webPageName', item.name);
+                                tr.append(
+                                    $('<th>')
+                                        .attr('scope', 'row')
+                                        .text(`${i + 1}`)
+                                );
+                                tr.append($('<td>').text(item.name));
+                                tr.append($('<td>').text(item.url));
+                                tr.append($('<td>').text(formatZonedDateTime(item.created)));
+                                tr.append($('<td>').text(formatZonedDateTime(item.lastRun)));
+                                tr.append($('<td>').append(createCheckIcon(item.enabled)));
+                                let btnEdit = $('<button>')
+                                    .attr('type', 'button')
+                                    .addClass('btn')
+                                    .addClass('btn-primary')
+                                    .addClass('btn-sm')
+                                    .append($('<i>').addClass("far").addClass("fa-edit").addClass("pr-1"))
+                                    .append('Edit')
+                                    .on({
+                                        click: function (event) {
+                                            event.preventDefault();
+
+                                            let webPageId = $(event.target).closest('tr').data('webPageId');
+                                            if (webPageId !== undefined) {
+                                                window.location.assign('/web-page?id=' + webPageId);
+                                            }
+                                        }
+                                    });
+                                let btnDelete = $('<button>')
+                                    .attr('type', 'button')
+                                    .addClass('btn')
+                                    .addClass('btn-primary')
+                                    .addClass('btn-sm')
+                                    .append($('<i>').addClass("far").addClass("fa-trash-alt").addClass("pr-1"))
+                                    .append('Delete')
+                                    .on({
+                                        click: function (event) {
+                                            event.preventDefault();
+
+                                            let row = $(event.target).closest('tr');
+                                            let webPageId = row.data('webPageId');
+                                            let webPageName = row.data('webPageName');
+                                            if (webPageId !== undefined) {
+                                                deleteWebPage(webPageId, webPageName, function (data, textStatus, jqXHR) {
+                                                    window.location.assign('/');
+                                                });
+                                            }
+                                        }
+                                    });
+                                let btnExecute = $('<button>')
+                                    .attr('type', 'button')
+                                    .addClass('btn')
+                                    .addClass('btn-primary')
+                                    .addClass('btn-sm')
+                                    .append($('<i>').addClass("far").addClass("fa-play-circle").addClass("pr-1"))
+                                    .append('Execute')
+                                    .on({
+                                        click: function (event) {
+                                            event.preventDefault();
+
+                                            let row = $(event.target).closest('tr');
+                                            let webPageId = row.data('webPageId');
+                                            let webPageName = row.data('webPageName');
+                                            if (webPageId !== undefined) {
+                                                executeWebPage(webPageId, webPageName, function (data, textStatus, jqXHR) {
+                                                    window.location.assign('/');
+                                                });
+                                            }
+                                        }
+                                    });
+                                let buttons = $('<div>')
+                                    .addClass('btn-group')
+                                    .attr("role", "group")
+                                    .attr("aria-label", "Actions")
+                                    .append(btnEdit)
+                                    .append(btnDelete)
+                                    .append(btnExecute);
+                                tr.append($('<td>').append(buttons));
+                                tBody.append(tr);
+                            }
+                        );
+                    }
                 } else {
-                    data.forEach(function (item, i) {
-                            let tr = $('<tr>');
-                            tr.data('webPageId', item.id);
-                            tr.data('webPageName', item.name);
-                            tr.append(
-                                $('<th>')
-                                    .attr('scope', 'row')
-                                    .text(`${i + 1}`)
-                            );
-                            tr.append($('<td>').text(item.name));
-                            tr.append($('<td>').text(item.url));
-                            tr.append($('<td>').text(item.created));
-                            tr.append($('<td>').text(item.lastRun));
-                            tr.append($('<td>').append(createCheckIcon(item.enabled)));
-                            let btnEdit = $('<button>')
-                                .attr('type', 'button')
-                                .addClass('btn')
-                                .addClass('btn-primary')
-                                .addClass('btn-sm')
-                                .append($('<i>').addClass("far").addClass("fa-edit").addClass("pr-1"))
-                                .append('Edit')
-                                .on({
-                                    click: function (event) {
-                                        event.preventDefault();
-
-                                        let webPageId = $(event.target).closest('tr').data('webPageId');
-                                        if (webPageId !== undefined) {
-                                            window.location.assign('/web-page?id=' + webPageId);
-                                        }
-                                    }
-                                });
-                            let btnDelete = $('<button>')
-                                .attr('type', 'button')
-                                .addClass('btn')
-                                .addClass('btn-primary')
-                                .addClass('btn-sm')
-                                .append($('<i>').addClass("far").addClass("fa-trash-alt").addClass("pr-1"))
-                                .append('Delete')
-                                .on({
-                                    click: function (event) {
-                                        event.preventDefault();
-
-                                        let row = $(event.target).closest('tr');
-                                        let webPageId = row.data('webPageId');
-                                        let webPageName = row.data('webPageName');
-                                        if (webPageId !== undefined) {
-                                            deleteWebPage(webPageId, webPageName, function (data, textStatus, jqXHR) {
-                                                window.location.assign('/');
-                                            });
-                                        }
-                                    }
-                                });
-                            let btnExecute = $('<button>')
-                                .attr('type', 'button')
-                                .addClass('btn')
-                                .addClass('btn-primary')
-                                .addClass('btn-sm')
-                                .append($('<i>').addClass("far").addClass("fa-play-circle").addClass("pr-1"))
-                                .append('Execute')
-                                .on({
-                                    click: function (event) {
-                                        event.preventDefault();
-
-                                        let row = $(event.target).closest('tr');
-                                        let webPageId = row.data('webPageId');
-                                        let webPageName = row.data('webPageName');
-                                        if (webPageId !== undefined) {
-                                            executeWebPage(webPageId, webPageName, function (data, textStatus, jqXHR) {
-                                                window.location.assign('/');
-                                            });
-                                        }
-                                    }
-                                });
-                            let buttons = $('<div>')
-                                .addClass('btn-group')
-                                .attr("role", "group")
-                                .attr("aria-label", "Actions")
-                                .append(btnEdit)
-                                .append(btnDelete)
-                                .append(btnExecute);
-                            tr.append($('<td>').append(buttons));
-                            tBody.append(tr);
-                        }
-                    );
+                    console.log(data);
+                    tableSummary(tBody, 'Error! Invalid data in response.');
                 }
-            } else {
-                console.log(data);
-                tableSummary(tBody, 'Error! Invalid data in response.');
             }
-        };
+        ;
 
         let loadWebPages = function () {
             let tBody = $("#tableWebPage").find('tbody');

@@ -121,3 +121,8 @@ function coalesce() {
     }
     return null;
 }
+
+let formatZonedDateTime = function (value) {
+    let result = moment(value, 'YYYY-MM-DDTHH:mm:ss:SSZ');
+    return result.isValid() ? result.format("YYYY-MM-DD HH:mm:ss") : '';
+};
