@@ -179,7 +179,7 @@
                 success: function (data) {
                     $("#loading").addClass('d-none');
                     $("#content").removeClass('d-none');
-                    webPageName = data;
+                    webPageName = data.name;
                     fillForm(data);
                     fillTable(data.diffs)
                 },

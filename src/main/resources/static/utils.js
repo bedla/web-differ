@@ -1,5 +1,5 @@
 let deleteWebPage = function (webPageId, webPageName, successAction) {
-    let name = $("span").text(webPageName).html();
+    let name = $("<i>").text(webPageName).html();
     bootbox.confirm({
         title: 'Delete WebPage?',
         message: `Do you really want to delete WebPage '${name}'!`,
@@ -40,7 +40,7 @@ let deleteWebPage = function (webPageId, webPageName, successAction) {
 };
 
 let executeWebPage = function (webPageId, webPageName, successAction) {
-    let name = $("span").text(webPageName).html();
+    let name = $("<i>").text(webPageName).html();
     bootbox.confirm({
         title: 'Execute WebPage monitor?',
         message: `Do you really want to execute change detection on WebPage '${name}'!`,
