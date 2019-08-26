@@ -39,7 +39,7 @@ class SecurityConfig(
 
     override fun configure(web: WebSecurity) {
         web.ignoring()
-            .antMatchers("/static/**", "/webjars/**")
+            .antMatchers("/static/**", "/webjars/**", "/privacy")
     }
 
     @Bean
