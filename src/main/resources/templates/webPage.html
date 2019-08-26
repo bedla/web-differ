@@ -113,7 +113,35 @@
             $("#enabled").prop('checked', data.enabled);
             $("#created").val(data.created);
             $("#lastRun").val(data.lastRun);
-            fillTable(data.diffs)
+        };
+
+        let exceptionInfo = function (item) {
+            if (item['@type'] === 'ERROR') {
+                return `${item.exceptionName} id=${item.exceptionUuid}`
+            } else {
+                return null;
+            }
+        };
+
+        let itemIcon = function (item) {
+            if (item['@type'] === 'ERROR') {
+                return $('<i>')
+                    .addClass("fas")
+                    .addClass("fa-bug")
+                    .attr("title", "General error");
+            } else if (item['@type'] === 'INVALID_SELECTOR') {
+                return $('<i>')
+                    .addClass("fas")
+                    .addClass("fa-exclamation-triangle")
+                    .attr("title", "Selector not found");
+            } else if (item['@type'] === 'CONTENT') {
+                return $('<i>')
+                    .addClass("far")
+                    .addClass("fa-object-group")
+                    .attr("title", "Content from selector");
+            } else {
+                throw 'Invalid type' + item['@type'];
+            }
         };
 
         let fillTable = function (diffs) {
@@ -129,9 +157,9 @@
                     tr.append(
                         $('<th>')
                             .attr('scope', 'row')
-                            .text(item.type)
+                            .append(itemIcon(item))
                     );
-                    tr.append($('<td>').text(coalesce(item.content, item.invalidSelector, item.exceptionName)));
+                    tr.append($('<td>').text(coalesce(item.content, item.selector, exceptionInfo(item))));
                     tr.append($('<td>').text(item.created));
                     tBody.append(tr);
                 });
@@ -152,6 +180,7 @@
                     $("#content").removeClass('d-none');
                     webPageName = data;
                     fillForm(data);
+                    fillTable(data.diffs)
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     onError(jqXHR, textStatus, errorThrown,

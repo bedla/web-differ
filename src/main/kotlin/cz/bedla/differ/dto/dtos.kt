@@ -1,5 +1,7 @@
 package cz.bedla.differ.dto
 
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import cz.bedla.differ.utils.findPropertyAs
 import cz.bedla.differ.utils.findPropertyAsZonedDateTime
 import cz.bedla.differ.utils.getPropertyAs
@@ -61,29 +63,50 @@ fun Entity.createWebPageDetail(diffs: List<Diff>): WebPageDetail {
     return WebPageDetail(name, url, selector, enabled, created, lastRun, diffs)
 }
 
-data class Diff(
-    val type: Type,
-    val content: String?,
-    val invalidSelector: String?,
-    val exceptionName: String?,
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    property = "@type")
+@JsonSubTypes(value = [
+    JsonSubTypes.Type(value = DiffContent::class, name = "CONTENT"),
+    JsonSubTypes.Type(value = DiffInvalidSelector::class, name = "INVALID_SELECTOR"),
+    JsonSubTypes.Type(value = DiffError::class, name = "ERROR")
+])
+interface Diff {
     val created: ZonedDateTime
-) {
-    enum class Type { ERROR_SELECTOR, ERROR_EXCEPTION, CONTENT, NAN }
 }
+
+data class DiffContent(
+    override val created: ZonedDateTime,
+    val content: String
+) : Diff
+
+data class DiffInvalidSelector(
+    override val created: ZonedDateTime,
+    val selector: String
+) : Diff
+
+data class DiffError(
+    override val created: ZonedDateTime,
+    val exceptionUuid: String,
+    val exceptionName: String
+) : Diff
 
 fun Entity.createDiff(): Diff {
     val invalidSelector: String? = findPropertyAs("invalidSelector")
     val exceptionName: String? = findPropertyAs("exceptionName")
+    val exceptionUuid: String? = findPropertyAs("exceptionUuid")
     val content: String? = findPropertyAs("content")
     val created = getPropertyAsZonedDateTime("created")
 
-    val type = when {
-        invalidSelector != null -> Diff.Type.ERROR_SELECTOR
-        exceptionName != null -> Diff.Type.ERROR_EXCEPTION
-        content != null -> Diff.Type.CONTENT
-        else -> Diff.Type.NAN
+    return when {
+        invalidSelector != null -> DiffInvalidSelector(created, invalidSelector)
+        exceptionName != null -> DiffError(
+            created,
+            exceptionUuid ?: error("Exception UUID no found for entity $this"),
+            exceptionName)
+        content != null -> DiffContent(created, content)
+        else -> error("Unrecognized diff for entity $this")
     }
-    return Diff(type, content, invalidSelector, exceptionName, created)
 }
 
 
