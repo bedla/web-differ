@@ -140,6 +140,11 @@
                     .addClass("far")
                     .addClass("fa-object-group")
                     .attr("title", "Content from selector");
+            } else if (item['@type'] === 'STOP') {
+                return $('<i>')
+                    .addClass("fas")
+                    .addClass("fa-ban")
+                    .attr("title", "Execution stopped");
             } else {
                 throw 'Invalid type' + item['@type'];
             }
@@ -160,7 +165,11 @@
                             .attr('scope', 'row')
                             .append(itemIcon(item))
                     );
-                    tr.append($('<td>').text(coalesce(item.content, item.selector, exceptionInfo(item))));
+                    tr.append($('<td>').text(coalesce(
+                        item.content,
+                        item.selector,
+                        item.countErrors,
+                        exceptionInfo(item))));
                     tr.append($('<td>').append(createDateTimeSpan(formatZonedDateTime(item.created))));
                     tBody.append(tr);
                 });
@@ -263,8 +272,7 @@
         });
 
         loadWebPage(webPageId);
-    })
-    ;
+    });
 </script>
 </body>
 </html>

@@ -1,7 +1,6 @@
 package cz.bedla.differ.service
 
-import cz.bedla.differ.dto.createUser
-import cz.bedla.differ.dto.createWebPageDetail
+import cz.bedla.differ.dto.*
 import cz.bedla.differ.utils.findEntity
 import cz.bedla.differ.utils.findPropertyAs
 import cz.bedla.differ.utils.getDiffs
@@ -78,6 +77,9 @@ class DiffRunnerServiceImpl(
                 tx.saveExceptionRun(webPageEntity,
                     url,
                     if (e is ExecutionException) (e.cause ?: e) else e)
+                if (tx.countLatestContinuousErrors(webPageEntity) >= 5) {
+                    tx.saveStopFurtherExecution(webPageEntity, 5)
+                }
             }
         }
     }
@@ -130,6 +132,26 @@ class DiffRunnerServiceImpl(
             .intersect(findWithProp("Diff", "content"))
         val sorted = sort("Diff", "created", diffs, false)
         return sorted.first?.findPropertyAs("content")
+    }
+
+    private fun StoreTransaction.countLatestContinuousErrors(webPageEntity: Entity): Int {
+        val diffs = findLinks("Diff", webPageEntity, "webPage")
+        val errors = sort("Diff", "created", diffs, false).asSequence()
+            .map { it.createDiff() }
+            .takeWhile { it is DiffInvalidSelector || it is DiffError }
+            .toList()
+        return errors.size
+    }
+
+    private fun StoreTransaction.saveStopFurtherExecution(webPageEntity: Entity, countErrors: Int) {
+        log.info("Execution of $webPageEntity automatically stopped after $countErrors continuous errors")
+
+        val entity = newEntity("Diff")
+        entity.setProperty("countErrors", countErrors)
+        entity.setPropertyZonedDateTime("created", ZonedDateTime.now())
+        entity.setLink("webPage", webPageEntity)
+
+        webPageEntity.setProperty("enabled", false)
     }
 
     private fun StoreTransaction.findWebPage(webPageId: String): Entity? {

@@ -70,7 +70,8 @@ fun Entity.createWebPageDetail(diffs: List<Diff>): WebPageDetail {
 @JsonSubTypes(value = [
     JsonSubTypes.Type(value = DiffContent::class, name = "CONTENT"),
     JsonSubTypes.Type(value = DiffInvalidSelector::class, name = "INVALID_SELECTOR"),
-    JsonSubTypes.Type(value = DiffError::class, name = "ERROR")
+    JsonSubTypes.Type(value = DiffError::class, name = "ERROR"),
+    JsonSubTypes.Type(value = DiffStopExecution::class, name = "STOP")
 ])
 interface Diff {
     val created: ZonedDateTime
@@ -92,11 +93,17 @@ data class DiffError(
     val exceptionName: String
 ) : Diff
 
+data class DiffStopExecution(
+    override val created: ZonedDateTime,
+    val countErrors: Int
+) : Diff
+
 fun Entity.createDiff(): Diff {
     val invalidSelector: String? = findPropertyAs("invalidSelector")
     val exceptionName: String? = findPropertyAs("exceptionName")
     val exceptionUuid: String? = findPropertyAs("exceptionUuid")
     val content: String? = findPropertyAs("content")
+    val countErrors: Int? = findPropertyAs("countErrors")
     val created = getPropertyAsZonedDateTime("created")
 
     return when {
@@ -106,6 +113,7 @@ fun Entity.createDiff(): Diff {
             exceptionUuid ?: error("Exception UUID no found for entity $this"),
             exceptionName)
         content != null -> DiffContent(created, content)
+        countErrors != null -> DiffStopExecution(created, countErrors)
         else -> error("Unrecognized diff for entity $this")
     }
 }
