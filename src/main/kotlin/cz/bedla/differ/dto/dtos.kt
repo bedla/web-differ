@@ -32,7 +32,7 @@ data class WebPageSimple(
     val lastRun: ZonedDateTime?
 )
 
-fun Entity.createWebPage(): WebPageSimple {
+fun Entity.createWebPageSimple(): WebPageSimple {
     val id = id.toString()
     val name: String = getPropertyAs("name")
     val url: String = getPropertyAs("url")
@@ -44,6 +44,7 @@ fun Entity.createWebPage(): WebPageSimple {
 
 
 data class WebPageDetail(
+    val id: String,
     val name: String,
     val url: String,
     val selector: String,
@@ -60,7 +61,7 @@ fun Entity.createWebPageDetail(diffs: List<Diff>): WebPageDetail {
     val enabled: Boolean = getPropertyAs("enabled")
     val created = getPropertyAsZonedDateTime("created")
     val lastRun = findPropertyAsZonedDateTime("lastRun")
-    return WebPageDetail(name, url, selector, enabled, created, lastRun, diffs)
+    return WebPageDetail(id.toString(), name, url, selector, enabled, created, lastRun, diffs)
 }
 
 @JsonTypeInfo(
@@ -109,15 +110,17 @@ fun Entity.createDiff(): Diff {
     }
 }
 
-
 data class User(
     val subject: String,
     val firstName: String,
     val lastName: String,
     val email: String,
     val pictureUrl: String,
-    val active: Boolean
-)
+    val active: Boolean,
+    val oauth: OAuth
+) {
+    data class OAuth(val accessToken: String, val refreshToken: String?)
+}
 
 fun Entity.createUser(): User {
     val subject: String = getPropertyAs("subject")
@@ -126,5 +129,7 @@ fun Entity.createUser(): User {
     val email: String = getPropertyAs("email")
     val pictureUrl: String = getPropertyAs("pictureUrl")
     val active: Boolean = getPropertyAs("active")
-    return User(subject, firstName, lastName, email, pictureUrl, active)
+    val accessToken: String = getPropertyAs("oauth-accessToken")
+    val refreshToken: String? = findPropertyAs("oauth-refreshToken")
+    return User(subject, firstName, lastName, email, pictureUrl, active, User.OAuth(accessToken, refreshToken))
 }

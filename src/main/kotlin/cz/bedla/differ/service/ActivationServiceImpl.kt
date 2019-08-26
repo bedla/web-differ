@@ -16,6 +16,6 @@ class ActivationServiceImpl : ActivationService, InitializingBean {
     }
 
     companion object {
-        private val log: Logger = LoggerFactory.getLogger(ActivationServiceImpl::class.java)
+        private val log = LoggerFactory.getLogger(ActivationServiceImpl::class.java)!!
     }
 }

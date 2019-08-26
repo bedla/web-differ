@@ -2,10 +2,9 @@ package cz.bedla.differ.service
 
 import cz.bedla.differ.dto.*
 import cz.bedla.differ.utils.findEntity
+import cz.bedla.differ.utils.getDiffs
 import cz.bedla.differ.utils.setPropertyZonedDateTime
-import jetbrains.exodus.entitystore.Entity
 import jetbrains.exodus.entitystore.PersistentEntityStore
-import jetbrains.exodus.entitystore.StoreTransaction
 import java.time.ZonedDateTime
 
 class WebPageServiceImpl(
@@ -13,10 +12,10 @@ class WebPageServiceImpl(
     private val diffRunnerExecutor: DiffRunnerExecutor
 ) : WebPageService {
     override fun find(id: String, userId: String): WebPageDetail? = persistentEntityStore.computeInTransaction { tx ->
-        val entity = tx.findEntity(id) ?: return@computeInTransaction null
+        val webPageEntity = tx.findEntity(id) ?: return@computeInTransaction null
         val userEntity = tx.getUserEntity(userId)
-        if (entity.getLink("user") == userEntity) {
-            entity.createWebPageDetail(tx.getDiffs(entity))
+        if (webPageEntity.getLink("user") == userEntity) {
+            webPageEntity.createWebPageDetail(tx.getDiffs(webPageEntity))
         } else {
             null
         }
@@ -28,7 +27,7 @@ class WebPageServiceImpl(
         tx.sort("WebPage", "name", webPages, true)
             .asSequence()
             .filterNotNull()
-            .map { it.createWebPage() }
+            .map { it.createWebPageSimple() }
             .toList()
     }
 
@@ -79,11 +78,5 @@ class WebPageServiceImpl(
         } else {
             error("User entity $entity does not belong to user '$userId'")
         }
-    }
-
-    private fun StoreTransaction.getDiffs(webPageEntity: Entity): List<Diff> {
-        val diffs = findLinks("Diff", webPageEntity, "webPage")
-        return sort("Diff", "created", diffs, false)
-            .map { it.createDiff() }
     }
 }

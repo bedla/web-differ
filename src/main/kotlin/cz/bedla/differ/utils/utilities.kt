@@ -1,5 +1,7 @@
 package cz.bedla.differ.utils
 
+import cz.bedla.differ.dto.Diff
+import cz.bedla.differ.dto.createDiff
 import jetbrains.exodus.entitystore.Entity
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException
 import jetbrains.exodus.entitystore.StoreTransaction
@@ -7,6 +9,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 inline fun <reified T> Entity.findPropertyAs(key: String): T? {
     return getProperty(key) as? T
@@ -45,3 +48,13 @@ fun StoreTransaction.findEntity(id: String): Entity? =
         null
     }
 
+fun StoreTransaction.getDiffs(webPageEntity: Entity): List<Diff> {
+    val diffs = findLinks("Diff", webPageEntity, "webPage")
+    return sort("Diff", "created", diffs, false)
+        .map { it.createDiff() }
+}
+
+fun ZonedDateTime.prettyToString(): String =
+    DateTimeFormatter
+        .ofPattern("yyyy-MM-dd hh:mm:ss")
+        .format(toLocalDateTime())

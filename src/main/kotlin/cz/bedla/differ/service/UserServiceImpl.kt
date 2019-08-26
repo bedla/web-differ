@@ -35,7 +35,9 @@ class UserServiceImpl(
         pictureUrl: String,
         firstName: String,
         lastName: String,
-        email: String
+        email: String,
+        accessToken: String,
+        refreshToken: String?
     ) = persistentEntityStore.executeInTransaction { tx ->
         val entity = tx.findUserEntity(subject)
             .let {
@@ -52,10 +54,11 @@ class UserServiceImpl(
         entity.setProperty("firstName", firstName)
         entity.setProperty("lastName", lastName)
         entity.setProperty("email", email)
+        entity.setProperty("oauth-accessToken", accessToken)
+        if (refreshToken != null) entity.setProperty("oauth-refreshToken", refreshToken)
     }
 
-
-    private fun userFromDb(userId: String): User = persistentEntityStore.computeInTransaction { tx ->
+    override fun userFromDb(userId: String): User = persistentEntityStore.computeInTransaction { tx ->
         val entity = tx.getUserEntity(userId)
         entity.createUser()
     }

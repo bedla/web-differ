@@ -21,8 +21,11 @@ class ServiceConfig(
     fun diffRunnerExecutor(): DiffRunnerExecutor = DiffRunnerExecutorImpl(taskExecutor, persistentEntityStore, diffRunnerService())
 
     @Bean
-    fun diffRunnerService(): DiffRunnerService = DiffRunnerServiceImpl(persistentEntityStore)
+    fun diffRunnerService(): DiffRunnerService = DiffRunnerServiceImpl(persistentEntityStore, emailSender())
 
     @Bean
     fun appInitialized(): AppInitialized = AppInitialized(diffRunnerExecutor())
+
+    @Bean
+    fun emailSender(): EmailSender = EmailSenderImpl()
 }

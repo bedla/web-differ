@@ -61,6 +61,6 @@ class DiffRunnerExecutorImpl(
     }
 
     companion object {
-        private val log = LoggerFactory.getLogger(DiffRunnerExecutorImpl::class.java)
+        private val log = LoggerFactory.getLogger(DiffRunnerExecutorImpl::class.java)!!
     }
 }

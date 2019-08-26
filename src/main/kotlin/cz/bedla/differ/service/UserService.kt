@@ -19,8 +19,12 @@ interface UserService {
         pictureUrl: String,
         firstName: String,
         lastName: String,
-        email: String
+        email: String,
+        accessToken: String,
+        refreshToken: String?
     )
+
+    fun userFromDb(userId: String): User
 }
 
 fun StoreTransaction.getUserEntity(userId: String): Entity =
