@@ -1,291 +1,48 @@
-<!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>WebDiffer</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" href="/webjars/bootstrap/4.3.1/css/bootstrap.css">
     <link href="/webjars/font-awesome/5.10.1/css/all.css" rel="stylesheet">
-    <link href="/webjars/datatables/1.10.19/css/jquery.dataTables.css" rel="stylesheet">
-    <link href="/webjars/datatables/1.10.19/css/dataTables.bootstrap4.css" rel="stylesheet">
     <script src="/webjars/jquery/3.3.1/jquery.js"></script>
     <script src="/webjars/bootstrap/4.3.1/js/bootstrap.js"></script>
-    <script src="/webjars/momentjs/2.24.0/moment.js"></script>
-    <script src="/webjars/datatables/1.10.19/js/jquery.dataTables.js"></script>
-    <script src="/webjars/datatables/1.10.19/js/dataTables.bootstrap4.js"></script>
-    <script src="/static/bootbox-v5.3.2/bootbox.all.min.js"></script>
-    <script src="/static/utils.js"></script>
 </head>
 <body>
 <div class="container">
     <div th:replace="layout :: header"></div>
-    <h1>Dashboard</h1>
-    <div class="row pl-5 pr-5 pt-1 pb-0">
-        <table class="table table-bordered table-hover" id="tableWebPage">
-            <thead>
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Name</th>
-                <th scope="col">Url</th>
-                <th scope="col">Created</th>
-                <th scope="col">Last run</th>
-                <th scope="col">Enabled</th>
-                <th scope="col">Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td colspan="7">No data</td>
-            </tr>
-            </tbody>
-        </table>
+    <p class="lead pt-1 pb-1">
+        Application for monitoring changes on specified web pages
+    </p>
+    <p>
+        As a user of this application you can create web-page monitoring to see changes in time on URL using specified
+        CSS selector.
+    </p>
+    <div class="alert alert-info" role="alert">
+        Application is public beta and you will need activation code to access all functionality.
     </div>
-    <div class="row pl-5 pr-5 pt-0 pb-1">
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalAddWebPage">
-            <i class="far fa-plus-square pr-2"></i>Add WebPage to monitor
-        </button>
-    </div>
-</div>
-
-<div class="modal fade" id="modalAddWebPage" tabindex="-1" role="dialog" aria-labelledby="labelModalAddWebPage"
-     aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="labelModalAddWebPage">Add WebPage to monitor</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="formWebPage" class="needs-validation" novalidate>
-                    <div class="form-group">
-                        <label for="modalAddWebPageName">Name</label>
-                        <input type="text" class="form-control" id="modalAddWebPageName" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="modalAddWebPageUrl">URL</label>
-                        <input type="text" class="form-control" id="modalAddWebPageUrl" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="modalAddWebPageSelector">Selector</label>
-                        <input type="text" class="form-control" id="modalAddWebPageSelector" required>
-                    </div>
-                    <div class="form-group">
-                        <div class="custom-control custom-switch">
-                            <input type="checkbox" class="custom-control-input" id="modalAddWebPageEnabled">
-                            <label class="custom-control-label" for="modalAddWebPageEnabled">Toggle to enable or
-                                disable</label>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="modalAddWebPageSubmit">Add WebPage</button>
-            </div>
-        </div>
+    <p>
+        You can login (create user account) using your Google Account. You will be requested to consent
+        <strong>security permissions</strong> for this application.
+    </p>
+    <ul>
+        <li>One group of permissions is used for your identification (name, email, avatar) by this application.</li>
+        <li>Second permission is used to send you notification email using GMail.</li>
+    </ul>
+    <p>
+        When application sends you notification email it will looks like that you have send email to yourself.
+    </p>
+    <p class="pb-5">
+        Application mainly saves basic information about you (you can see them at user's profile page) and
+        OAuth2 access and refresh tokens send to application by Google authentication process during login.
+        These tokens are used to comunicate with Google API servers (sending notification email)
+    </p>
+    <div class="alert alert-danger" role="alert">
+        You can use this application with absolutely no warranty and at your own risk! Nothing is guaranteed.
+        Google account is used to authenticate user and send notification emails.
+        You can read <a href="/privacy">privacy policy</a>.
     </div>
 </div>
-
-<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-
-<script>
-    $(function () {
-        let tableSummary = function (tBody, text) {
-            tableRow(tBody, text, 7);
-        };
-
-        function createCheckIcon(enabled) {
-            return $('<i>')
-                .addClass("far")
-                .addClass(enabled ? "fa-check-square" : "fa-square");
-        }
-
-        let fillTable = function (tBody, data) {
-                if (Array.isArray(data)) {
-                    tBody.find("tr").remove();
-
-                    if (data.length === 0) {
-                        tableSummary(tBody, 'No data!');
-                    } else {
-                        data.forEach(function (item, i) {
-                                let tr = $('<tr>');
-                                tr.data('webPageId', item.id);
-                                tr.data('webPageName', item.name);
-                                tr.append(
-                                    $('<th>')
-                                        .attr('scope', 'row')
-                                        .text(`${i + 1}`)
-                                );
-                                tr.append($('<td>').text(item.name));
-                                tr.append($('<td>').text(item.url));
-                                tr.append($('<td>').append(createDateTimeSpan(formatZonedDateTime(item.created))));
-                                tr.append($('<td>').append(createDateTimeSpan(formatZonedDateTime(item.lastRun))));
-                                tr.append($('<td>').append(createCheckIcon(item.enabled)));
-                                let btnEdit = $('<button>')
-                                    .attr('type', 'button')
-                                    .addClass('btn')
-                                    .addClass('btn-primary')
-                                    .addClass('btn-sm')
-                                    .append($('<i>').addClass("far").addClass("fa-edit").addClass("pr-1"))
-                                    .append('Edit')
-                                    .on({
-                                        click: function (event) {
-                                            event.preventDefault();
-
-                                            let webPageId = $(event.target).closest('tr').data('webPageId');
-                                            if (webPageId !== undefined) {
-                                                window.location.assign('/web-page?id=' + webPageId);
-                                            }
-                                        }
-                                    });
-                                let btnDelete = $('<button>')
-                                    .attr('type', 'button')
-                                    .addClass('btn')
-                                    .addClass('btn-primary')
-                                    .addClass('btn-sm')
-                                    .append($('<i>').addClass("far").addClass("fa-trash-alt").addClass("pr-1"))
-                                    .append('Delete')
-                                    .on({
-                                        click: function (event) {
-                                            event.preventDefault();
-
-                                            let row = $(event.target).closest('tr');
-                                            let webPageId = row.data('webPageId');
-                                            let webPageName = row.data('webPageName');
-                                            if (webPageId !== undefined) {
-                                                deleteWebPage(webPageId, webPageName, function (data, textStatus, jqXHR) {
-                                                    window.location.assign('/');
-                                                });
-                                            }
-                                        }
-                                    });
-                                let btnExecute = $('<button>')
-                                    .attr('type', 'button')
-                                    .addClass('btn')
-                                    .addClass('btn-primary')
-                                    .addClass('btn-sm')
-                                    .append($('<i>').addClass("far").addClass("fa-play-circle").addClass("pr-1"))
-                                    .append('Execute')
-                                    .on({
-                                        click: function (event) {
-                                            event.preventDefault();
-
-                                            let row = $(event.target).closest('tr');
-                                            let webPageId = row.data('webPageId');
-                                            let webPageName = row.data('webPageName');
-                                            if (webPageId !== undefined) {
-                                                executeWebPage(webPageId, webPageName, function (data, textStatus, jqXHR) {
-                                                    window.location.assign('/');
-                                                });
-                                            }
-                                        }
-                                    });
-                                let buttons = $('<div>')
-                                    .addClass('btn-group')
-                                    .attr("role", "group")
-                                    .attr("aria-label", "Actions")
-                                    .append(btnEdit)
-                                    .append(btnDelete)
-                                    .append(btnExecute);
-                                tr.append($('<td>').append(buttons));
-                                tBody.append(tr);
-                            }
-                        );
-                        $('#tableWebPage').DataTable({
-                            "paging": true,
-                            "ordering": false,
-                            "info": false,
-                            "scrollX": true,
-                            "scroller": true,
-                            "searching": false
-                        });
-                    }
-                } else {
-                    console.log(data);
-                    tableSummary(tBody, 'Error! Invalid data in response.');
-                }
-            }
-        ;
-
-        let loadWebPages = function () {
-            let tBody = $("#tableWebPage").find('tbody');
-
-            tableSummary(tBody, 'Loading data...');
-
-            $.ajax({
-                type: "GET",
-                url: "/api/user/me/web-page",
-                contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                success: function (data) {
-                    fillTable(tBody, data);
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    onError(jqXHR, textStatus, errorThrown, jQuery.noop, {
-                        403: function () {
-                            // user probably does not have account activated
-                            window.location.assign('/profile');
-                        },
-                        '*': function (defaultErrorMessage) {
-                            tableSummary(tBody, 'Error! Unable to load web-pages.');
-                        }
-                    });
-                }
-            })
-        };
-
-        let createWebPagePayload = function () {
-            let name = $("#modalAddWebPageName").val() || '';
-            let url = $("#modalAddWebPageUrl").val() || '';
-            let selector = $("#modalAddWebPageSelector").val() || '';
-            let enabled = $("#modalAddWebPageEnabled:checked").val();
-
-            return {
-                name: name,
-                url: url,
-                selector: selector,
-                enabled: enabled === 'on'
-            };
-        };
-
-        $("#modalAddWebPageSubmit").on({
-            click: function (event) {
-                event.preventDefault();
-                event.stopPropagation();
-
-                let form = $('#formWebPage');
-                if (form[0].checkValidity() === true) {
-                    $.ajax({
-                        type: "PUT",
-                        url: `/api/user/me/web-page`,
-                        data: JSON.stringify(createWebPagePayload()),
-                        contentType: "application/json; charset=utf-8",
-                        dataType: "text",
-                        success: function (data) {
-                            $('#modalAddWebPage').modal('hide');
-                            window.location.reload();
-                        },
-                        error: function (jqXHR, textStatus, errorThrown) {
-                            onError(jqXHR, textStatus, errorThrown,
-                                function () {
-                                    $('#modalAddWebPage').modal('hide');
-                                }, {
-                                    '*': function () {
-                                        bootbox.alert('Error while creating WebPage');
-                                    }
-                                });
-                        }
-                    });
-                }
-                form.addClass('was-validated');
-            }
-        });
-
-        loadWebPages();
-    })
-    ;
-</script>
 </body>
 </html>

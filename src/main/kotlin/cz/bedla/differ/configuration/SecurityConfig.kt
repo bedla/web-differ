@@ -24,6 +24,7 @@ class SecurityConfig(
     override fun configure(http: HttpSecurity) {
         http.requestMatcher(notActuatorMatcher())
             .authorizeRequests()
+            .antMatchers("/").permitAll()
             .antMatchers("/login").permitAll()
             .anyRequest().authenticated()
             .and()
