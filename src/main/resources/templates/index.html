@@ -58,25 +58,27 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <label for="modalAddWebPageName">Name</label>
-                    <input type="text" class="form-control" id="modalAddWebPageName">
-                </div>
-                <div class="form-group">
-                    <label for="modalAddWebPageUrl">URL</label>
-                    <input type="text" class="form-control" id="modalAddWebPageUrl">
-                </div>
-                <div class="form-group">
-                    <label for="modalAddWebPageSelector">Selector</label>
-                    <input type="text" class="form-control" id="modalAddWebPageSelector">
-                </div>
-                <div class="form-group">
-                    <div class="custom-control custom-switch">
-                        <input type="checkbox" class="custom-control-input" id="modalAddWebPageEnabled">
-                        <label class="custom-control-label" for="modalAddWebPageEnabled">Toggle to enable or
-                            disable</label>
+                <form id="formWebPage" class="needs-validation" novalidate>
+                    <div class="form-group">
+                        <label for="modalAddWebPageName">Name</label>
+                        <input type="text" class="form-control" id="modalAddWebPageName" required>
                     </div>
-                </div>
+                    <div class="form-group">
+                        <label for="modalAddWebPageUrl">URL</label>
+                        <input type="text" class="form-control" id="modalAddWebPageUrl" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalAddWebPageSelector">Selector</label>
+                        <input type="text" class="form-control" id="modalAddWebPageSelector" required>
+                    </div>
+                    <div class="form-group">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="modalAddWebPageEnabled">
+                            <label class="custom-control-label" for="modalAddWebPageEnabled">Toggle to enable or
+                                disable</label>
+                        </div>
+                    </div>
+                </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -251,28 +253,33 @@
         $("#modalAddWebPageSubmit").on({
             click: function (event) {
                 event.preventDefault();
+                event.stopPropagation();
 
-                $.ajax({
-                    type: "PUT",
-                    url: `/api/user/me/web-page`,
-                    data: JSON.stringify(createWebPagePayload()),
-                    contentType: "application/json; charset=utf-8",
-                    dataType: "text",
-                    success: function (data) {
-                        $('#modalAddWebPage').modal('hide');
-                        window.location.reload();
-                    },
-                    error: function (jqXHR, textStatus, errorThrown) {
-                        onError(jqXHR, textStatus, errorThrown,
-                            function () {
-                                $('#modalAddWebPage').modal('hide');
-                            }, {
-                                '*': function () {
-                                    bootbox.alert('Error while creating WebPage');
-                                }
-                            });
-                    }
-                });
+                let form = $('#formWebPage');
+                if (form[0].checkValidity() === true) {
+                    $.ajax({
+                        type: "PUT",
+                        url: `/api/user/me/web-page`,
+                        data: JSON.stringify(createWebPagePayload()),
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "text",
+                        success: function (data) {
+                            $('#modalAddWebPage').modal('hide');
+                            window.location.reload();
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            onError(jqXHR, textStatus, errorThrown,
+                                function () {
+                                    $('#modalAddWebPage').modal('hide');
+                                }, {
+                                    '*': function () {
+                                        bootbox.alert('Error while creating WebPage');
+                                    }
+                                });
+                        }
+                    });
+                }
+                form.addClass('was-validated');
             }
         });
 

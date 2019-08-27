@@ -32,18 +32,18 @@
     <div class="row">
         <div class="col-sm">
             <div class="row d-none" id="content">
-                <form>
+                <form id="formWebPage" class="needs-validation" novalidate>
                     <div class="form-group row">
                         <label for="name">Name</label>
-                        <input type="text" class="form-control" id="name">
+                        <input type="text" class="form-control" id="name" required>
                     </div>
                     <div class="form-group row">
                         <label for="url">URL</label>
-                        <input type="text" class="form-control" id="url">
+                        <input type="text" class="form-control" id="url" required>
                     </div>
                     <div class="form-group row">
-                        <label for="url">Selector</label>
-                        <input type="text" class="form-control" id="selector">
+                        <label for="selector">Selector</label>
+                        <input type="text" class="form-control" id="selector" required>
                     </div>
                     <div class="form-group row">
                         <div class="custom-control custom-switch">
@@ -248,27 +248,32 @@
         $("#update").on({
             click: function (event) {
                 event.preventDefault();
+                event.stopPropagation();
 
-                $.ajax({
-                    type: "POST",
-                    url: `/api/user/me/web-page/${webPageId}`,
-                    data: JSON.stringify(createWebPagePayload()),
-                    contentType: "application/json; charset=utf-8",
-                    dataType: "text",
-                    success: function (data) {
-                        window.location.reload();
-                    },
-                    error: function (jqXHR, textStatus, errorThrown) {
-                        onError(jqXHR, textStatus, errorThrown, jQuery.noop(), {
-                            404: function () {
-                                bootbox.alert('WebPage not found.');
-                            },
-                            '*': function (defaultErrorMessage) {
-                                bootbox.alert(defaultErrorMessage);
-                            }
-                        });
-                    }
-                });
+                let form = $('#formWebPage');
+                if (form[0].checkValidity() === true) {
+                    $.ajax({
+                        type: "POST",
+                        url: `/api/user/me/web-page/${webPageId}`,
+                        data: JSON.stringify(createWebPagePayload()),
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "text",
+                        success: function (data) {
+                            window.location.reload();
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            onError(jqXHR, textStatus, errorThrown, jQuery.noop(), {
+                                404: function () {
+                                    bootbox.alert('WebPage not found.');
+                                },
+                                '*': function (defaultErrorMessage) {
+                                    bootbox.alert(defaultErrorMessage);
+                                }
+                            });
+                        }
+                    });
+                }
+                form.addClass('was-validated');
             }
         });
         $("#delete").on({
