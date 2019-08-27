@@ -8,25 +8,16 @@ import cz.bedla.differ.utils.setPropertyZonedDateTime
 import jetbrains.exodus.entitystore.Entity
 import jetbrains.exodus.entitystore.PersistentEntityStore
 import jetbrains.exodus.entitystore.StoreTransaction
-import org.jsoup.Jsoup
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.InitializingBean
 import java.time.ZonedDateTime
 import java.util.*
 import java.util.concurrent.ExecutionException
-import javax.net.ssl.SSLSocketFactory
-
 
 class DiffRunnerServiceImpl(
     private val persistentEntityStore: PersistentEntityStore,
-    private val emailSender: EmailSender
-) : DiffRunnerService, InitializingBean {
-
-    private lateinit var sslSocketFactory: SSLSocketFactory
-
-    override fun afterPropertiesSet() {
-        sslSocketFactory = SSLSocketFactory.getDefault() as SSLSocketFactory
-    }
+    private val emailSender: EmailSender,
+    private val htmlPageService: HtmlPageService
+) : DiffRunnerService {
 
     override fun run(webPageId: String) {
         val canRun = checkAndUpdate(webPageId)
@@ -47,13 +38,7 @@ class DiffRunnerServiceImpl(
                 ?: error("Unable to find user for webPageId=$webPageId")
 
             try {
-                val doc = Jsoup.connect(url)
-                    .sslSocketFactory(if (url.startsWith("https://")) sslSocketFactory else null)
-                    .userAgent(userAgent)
-                    .timeout(5 * 1000)
-                    .get() ?: error("Unable to get document from URL $url")
-
-                val currentText = doc.select(selector).first()?.text()
+                val currentText = htmlPageService.contentOfSelector(url, selector)
                 val lastContent = tx.findLastContent(webPageEntity)
                 if (currentText == null) {
                     log.info("Unable to find selector '$selector' at web-page URL '$url'")
@@ -160,8 +145,6 @@ class DiffRunnerServiceImpl(
     }
 
     companion object {
-        private const val userAgent = """Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36"""
-
         private val log = LoggerFactory.getLogger(DiffRunnerServiceImpl::class.java)!!
     }
 }

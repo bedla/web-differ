@@ -8,6 +8,7 @@ import cz.bedla.differ.utils.getPropertyAs
 import cz.bedla.differ.utils.getPropertyAsZonedDateTime
 import jetbrains.exodus.entitystore.Entity
 import java.time.ZonedDateTime
+import java.util.*
 
 data class CreateWebPage(
     val name: String,
@@ -22,6 +23,31 @@ data class UpdateWebPage(
     val selector: String,
     val enabled: Boolean
 )
+
+data class TestWebPage(
+    val url: String,
+    val selector: String
+)
+
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    property = "@type")
+@JsonSubTypes(value = [
+    JsonSubTypes.Type(value = TestWebPageResponseContent::class, name = "CONTENT"),
+    JsonSubTypes.Type(value = TestWebPageResponseError::class, name = "ERROR")
+])
+interface TestWebPageResponse
+
+data class TestWebPageResponseContent(
+    val content: String,
+    val length: Int
+) : TestWebPageResponse
+
+data class TestWebPageResponseError(
+    val uuid: UUID,
+    val errorType: String,
+    val errorMessage: String
+) : TestWebPageResponse
 
 data class WebPageSimple(
     val id: String,

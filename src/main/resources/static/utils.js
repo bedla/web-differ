@@ -1,5 +1,5 @@
 let deleteWebPage = function (webPageId, webPageName, successAction) {
-    let name = $("<i>").text(webPageName).html();
+    let name = safeString(webPageName);
     bootbox.confirm({
         title: 'Delete WebPage?',
         message: `Do you really want to delete WebPage '${name}'!`,
@@ -40,7 +40,7 @@ let deleteWebPage = function (webPageId, webPageName, successAction) {
 };
 
 let executeWebPage = function (webPageId, webPageName, successAction) {
-    let name = $("<i>").text(webPageName).html();
+    let name = safeString(webPageName);
     bootbox.confirm({
         title: 'Execute WebPage monitor?',
         message: `Do you really want to execute change detection on WebPage '${name}'!`,
@@ -149,4 +149,8 @@ let createDateTimeSpan = function (dateTime) {
             .append(' ')
             .append($('<span>').addClass("text-nowrap").text(dateTime.time));
     }
+};
+
+let safeString = function (value) {
+    return $("<i>").text(value).html()
 };

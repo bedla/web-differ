@@ -1,21 +1,24 @@
 package cz.bedla.differ.rest
 
-import cz.bedla.differ.dto.CreateWebPage
-import cz.bedla.differ.dto.UpdateWebPage
-import cz.bedla.differ.dto.WebPageSimple
-import cz.bedla.differ.dto.WebPageDetail
+import cz.bedla.differ.dto.*
+import cz.bedla.differ.service.HtmlPageService
 import cz.bedla.differ.service.UserService
 import cz.bedla.differ.service.WebPageService
+import org.apache.commons.lang3.StringUtils.left
+import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.net.URI
+import java.util.*
 
 @RequestMapping("/api")
 @RestController
 class UserWebPageController(
     private val webPageService: WebPageService,
-    private val userService: UserService
+    private val userService: UserService,
+    private val htmlPageService: HtmlPageService
 ) {
     @PreAuthorize("isActivated()")
     @GetMapping("/user/me/web-page/{id}")
@@ -82,5 +85,26 @@ class UserWebPageController(
         } else {
             ResponseEntity.notFound()
         }.build()
+    }
+
+    @PreAuthorize("isActivated()")
+    @PostMapping("/user/me/web-page/test")
+    fun test(
+        @RequestBody testRequest: TestWebPage
+    ): ResponseEntity<TestWebPageResponse> {
+        return try {
+            val content = htmlPageService.contentOfSelector(testRequest.url, testRequest.selector) ?: ""
+            ResponseEntity.ok(TestWebPageResponseContent(left(content, 100), content.length))
+        } catch (e: Exception) {
+            val uuid = UUID.randomUUID()!!
+            log.error("Error id=$uuid while testing $testRequest", e)
+            ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(TestWebPageResponseError(uuid, e.javaClass.name, e.message ?: ""))
+        }
+    }
+
+    companion object {
+        val log = LoggerFactory.getLogger(UserWebPageController::class.java)!!
     }
 }

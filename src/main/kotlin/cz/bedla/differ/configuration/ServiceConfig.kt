@@ -12,20 +12,30 @@ class ServiceConfig(
     private val taskExecutor: TaskExecutor
 ) {
     @Bean
-    fun webPageService(): WebPageService = WebPageServiceImpl(persistentEntityStore, diffRunnerExecutor())
+    fun webPageService(): WebPageService =
+        WebPageServiceImpl(persistentEntityStore, diffRunnerExecutor())
 
     @Bean
-    fun activationService(): ActivationService = ActivationServiceImpl()
+    fun activationService(): ActivationService =
+        ActivationServiceImpl()
 
     @Bean
-    fun diffRunnerExecutor(): DiffRunnerExecutor = DiffRunnerExecutorImpl(taskExecutor, persistentEntityStore, diffRunnerService())
+    fun diffRunnerExecutor(): DiffRunnerExecutor =
+        DiffRunnerExecutorImpl(taskExecutor, persistentEntityStore, diffRunnerService())
 
     @Bean
-    fun diffRunnerService(): DiffRunnerService = DiffRunnerServiceImpl(persistentEntityStore, emailSender())
+    fun diffRunnerService(): DiffRunnerService =
+        DiffRunnerServiceImpl(persistentEntityStore, emailSender(), htmlPageService())
 
     @Bean
-    fun appInitialized(): AppInitialized = AppInitialized(diffRunnerExecutor())
+    fun appInitialized(): AppInitialized =
+        AppInitialized(diffRunnerExecutor())
 
     @Bean
-    fun emailSender(): EmailSender = EmailSenderImpl()
+    fun emailSender(): EmailSender =
+        EmailSenderImpl()
+
+    @Bean
+    fun htmlPageService(): HtmlPageService =
+        HtmlPageServiceImpl()
 }

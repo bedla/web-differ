@@ -74,6 +74,10 @@
                                 <i class="far fa-play-circle pr-1"></i>
                                 Execute
                             </button>
+                            <button type="button" class="btn btn-primary" id="test">
+                                <i class="fas fa-vial"></i>
+                                Test
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -279,6 +283,95 @@
                     bootbox.alert("WebPage diff executed. Run can take some time.", function () {
                         window.location.reload();
                     });
+                });
+            }
+        });
+        $("#test").on({
+            click: function (event) {
+                event.preventDefault();
+
+                let webPageUrl = $("#url").val() || '';
+                let webPageSelector = $("#selector").val() || '';
+                let webPageUrlText = safeString(webPageUrl);
+                let webPageSelectorText = safeString(webPageSelector);
+                $.ajax({
+                    type: "POST",
+                    url: `/api/user/me/web-page/test`,
+                    data: JSON.stringify({url: webPageUrl, selector: webPageSelector}),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (data, textStatus, jqXHR) {
+                        if (data['@type'] === 'CONTENT') {
+                            let resultContent = safeString(data.content);
+                            bootbox.alert({
+                                title: 'Result of test execution',
+                                message: '' +
+                                    '<div class="input-group input-group-sm mb-1">\n' +
+                                    '  <div class="input-group-prepend">\n' +
+                                    '    <span class="input-group-text">URL</span>\n' +
+                                    '  </div>\n' +
+                                    `  <textarea class="form-control" rows="2" readonly>${webPageUrlText}</textarea>\n` +
+                                    '</div>' +
+                                    '<div class="input-group input-group-sm mb-3">\n' +
+                                    '  <div class="input-group-prepend">\n' +
+                                    '    <span class="input-group-text">Selector</span>\n' +
+                                    '  </div>\n' +
+                                    `  <input type="text" class="form-control" readonly value="${webPageSelectorText}">\n` +
+                                    '</div>' +
+                                    '<div class="input-group input-group-sm mb-1">\n' +
+                                    '  <div class="input-group-prepend">\n' +
+                                    '    <span class="input-group-text">Content length</span>\n' +
+                                    '  </div>\n' +
+                                    `  <input type="text" class="form-control" readonly value="${data.length}">\n` +
+                                    '</div>' +
+                                    '<div class="input-group input-group-sm mb-1">\n' +
+                                    '  <div class="input-group-prepend">\n' +
+                                    '    <span class="input-group-text">Selector content</span>\n' +
+                                    '  </div>\n' +
+                                    `  <textarea class="form-control" rows="4" readonly>${resultContent}</textarea>\n` +
+                                    '</div>' +
+                                    '<p>Note: Do not forget to save data when you changed values (Name, URL, Selector)!</p>'
+                            });
+                        } else {
+                            throw `Invalid type ${data}`
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        if (jqXHR.status === 409 && jqXHR.responseJSON && jqXHR.responseJSON['@type'] === 'ERROR') {
+                            let uuid = safeString(jqXHR.responseJSON.uuid);
+                            let errorType = safeString(jqXHR.responseJSON.errorType);
+                            let errorMessage = safeString(jqXHR.responseJSON.errorMessage);
+                            bootbox.alert({
+                                title: 'Error occurred',
+                                message: '' +
+                                    '<div class="input-group input-group-sm mb-3">\n' +
+                                    '  <div class="input-group-prepend">\n' +
+                                    '    <span class="input-group-text">UUID</span>\n' +
+                                    '  </div>\n' +
+                                    `  <input type="text" class="form-control" readonly value="${uuid}">\n` +
+                                    '</div>' +
+                                    '<div class="input-group input-group-sm mb-1">\n' +
+                                    '  <div class="input-group-prepend">\n' +
+                                    '    <span class="input-group-text">Error</span>\n' +
+                                    '  </div>\n' +
+                                    `  <input type="text" class="form-control" readonly value="${errorType}">\n` +
+                                    '</div>' +
+                                    '<div class="input-group input-group-sm mb-1">\n' +
+                                    '  <div class="input-group-prepend">\n' +
+                                    '    <span class="input-group-text">Message</span>\n' +
+                                    '  </div>\n' +
+                                    `  <input type="text" class="form-control" readonly value="${errorMessage}">\n` +
+                                    '</div>' +
+                                    ''
+                            });
+                        } else {
+                            onError(jqXHR, textStatus, errorThrown, jQuery.noop, {
+                                '*': function (defaultErrorMessage) {
+                                    bootbox.alert(defaultErrorMessage);
+                                }
+                            });
+                        }
+                    }
                 });
             }
         });
