@@ -19,7 +19,7 @@ class DiffRunnerExecutorImpl(
         canRun.set(true)
     }
 
-    @Scheduled(cron = "0 */1 * * * *")
+    @Scheduled(cron = "0 */5 * * * *")
     fun execute() {
         log.info("Differ execution is about to run")
         runExecution()

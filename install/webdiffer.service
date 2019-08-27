@@ -1,0 +1,22 @@
+[Unit]
+Description=WebDiffer SpringBoot service
+After=syslog.target network.target
+
+[Service]
+Type=simple
+
+ExecStart=/opt/webdiffer/jdk8u222-b10/bin/java -Djava.awt.headless=true -jar /opt/webdiffer/web-differ-0.0.1-SNAPSHOT.jar
+RestartSec=10
+Restart=on-failure
+
+Environment=JAVA_HOME=/opt/webdiffer/jdk8u222-b10
+Environment=DATABASEDIR=/opt/webdiffer/data
+Environment=LOGGING_FILE_NAME=/opt/webdiffer/logs/application.log
+Environment=SERVER_PORT=10100
+EnvironmentFile=/opt/webdiffer/config.env
+
+User=webdiffer
+Group=webdiffer
+
+[Install]
+WantedBy=multi-user.target
