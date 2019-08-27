@@ -1,5 +1,6 @@
 <html lang="en"
-      xmlns:th="http://www.thymeleaf.org">
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>WebDiffer</title>
@@ -23,8 +24,14 @@
         Application is public beta and you will need activation code to access all functionality.
     </div>
     <p>
-        You can login (create user account) using your Google Account. You will be requested to consent
-        <strong>security permissions</strong> for this application.
+        You can login (create user account) using your Google Account.
+    </p>
+    <div class="alert alert-primary" role="alert" sec:authorize="!isAuthenticated()">
+        You are not logged in, please go to <a href="/login"><i class="fas fa-user"></i> login page</a>
+        to login using your Google account.
+    </div>
+    <p>
+        You will be requested to consent <strong>security permissions</strong> for this application.
     </p>
     <ul>
         <li>One group of permissions is used for your identification (name, email, avatar) by this application.</li>
