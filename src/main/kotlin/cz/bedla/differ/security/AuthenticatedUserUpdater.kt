@@ -22,7 +22,7 @@ class AuthenticatedUserUpdater(
         val lastName = principal.getAttribute("family_name")
         val email = principal.getAttribute("email")
         val accessToken: String = authentication.accessToken.tokenValue
-        val refreshToken: String? = authentication.refreshToken?.tokenValue
+        val refreshToken: String = authentication.refreshToken?.tokenValue ?: error("no refresh token obtined")
 
         userService.createOrUpdateUser(subject, pictureUrl, firstName, lastName, email, accessToken, refreshToken)
     }

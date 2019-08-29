@@ -37,7 +37,7 @@ class UserServiceImpl(
         lastName: String,
         email: String,
         accessToken: String,
-        refreshToken: String?
+        refreshToken: String
     ) = persistentEntityStore.executeInTransaction { tx ->
         val entity = tx.findUserEntity(subject)
             .let {
@@ -55,7 +55,7 @@ class UserServiceImpl(
         entity.setProperty("lastName", lastName)
         entity.setProperty("email", email)
         entity.setProperty("oauth-accessToken", accessToken)
-        if (refreshToken != null) entity.setProperty("oauth-refreshToken", refreshToken)
+        entity.setProperty("oauth-refreshToken", refreshToken)
     }
 
     override fun userFromDb(userId: String): User = persistentEntityStore.computeInTransaction { tx ->
