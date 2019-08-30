@@ -30,6 +30,10 @@
         You are not logged in, please go to <a href="/login"><i class="fas fa-user"></i> login page</a>
         to login using your Google account.
     </div>
+    <div class="alert alert-primary" role="alert" sec:authorize="isAuthenticated()">
+        You are logged in, please go to <a href="/dashboard">dashboard</a> to word with
+        application.
+    </div>
     <p>
         You will be requested to consent <strong>security permissions</strong> for this application.
     </p>
