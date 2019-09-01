@@ -281,7 +281,7 @@
                 event.preventDefault();
 
                 deleteWebPage(webPageId, webPageName, function (data, textStatus, jqXHR) {
-                    window.location.assign('/');
+                    window.location.reload();
                 });
             }
         });
