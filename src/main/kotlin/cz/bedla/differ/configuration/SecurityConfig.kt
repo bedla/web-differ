@@ -1,5 +1,6 @@
 package cz.bedla.differ.configuration
 
+import cz.bedla.differ.security.AccessTokenRefresher
 import cz.bedla.differ.security.AuthenticatedUserUpdater
 import cz.bedla.differ.security.MyOAuth2AuthorizationRequestResolver
 import cz.bedla.differ.service.UserService
@@ -70,4 +71,7 @@ class SecurityConfig(
     fun authorizationRequestResolver(): OAuth2AuthorizationRequestResolver {
         return MyOAuth2AuthorizationRequestResolver(clientRegistrationRepository)
     }
+
+    @Bean
+    fun accessTokenRefresher(): AccessTokenRefresher = AccessTokenRefresher(userService())
 }

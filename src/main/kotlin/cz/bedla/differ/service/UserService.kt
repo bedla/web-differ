@@ -21,7 +21,13 @@ interface UserService {
         lastName: String,
         email: String,
         accessToken: String,
-        refreshToken: String?
+        refreshToken: String
+    )
+
+    fun updateOAuthTokens(
+        oldAccessToken: String,
+        newAccessToken: String,
+        newRefreshToken: String?
     )
 
     fun userFromDb(userId: String): User

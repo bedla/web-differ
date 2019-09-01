@@ -1,17 +1,21 @@
 package cz.bedla.differ.service
 
 import com.google.api.client.auth.oauth2.BearerToken
+import com.google.api.client.auth.oauth2.ClientParametersAuthentication
 import com.google.api.client.auth.oauth2.Credential
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.client.util.Base64
 import com.google.api.services.gmail.Gmail
+import cz.bedla.differ.configuration.ApplicationProperties
 import cz.bedla.differ.dto.DiffContent
 import cz.bedla.differ.dto.User
 import cz.bedla.differ.dto.WebPageDetail
+import cz.bedla.differ.security.AccessTokenRefresher
 import cz.bedla.differ.utils.prettyToString
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Async
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
 import java.io.ByteArrayOutputStream
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -20,7 +24,11 @@ import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
 
 
-open class EmailSenderImpl : EmailSender {
+open class EmailSenderImpl(
+    private val applicationProperties: ApplicationProperties,
+    private val clientRegistrationRepository: ClientRegistrationRepository,
+    private val accessTokenRefresher: AccessTokenRefresher
+) : EmailSender {
     @Async
     override fun sendEmail(user: User, webPage: WebPageDetail): CompletableFuture<Boolean> {
         log.info("Sending email for user=${user.email} and web-page=${webPage.name}")
@@ -68,10 +76,19 @@ open class EmailSenderImpl : EmailSender {
         val oauth = user.oauth
         val accessToken = oauth.accessToken
         val refreshToken = oauth.refreshToken
-        return Credential(BearerToken.authorizationHeaderAccessMethod())
+        return Credential.Builder(BearerToken.authorizationHeaderAccessMethod())
+            .setJsonFactory(jsonFactory)
+            .setTransport(httpTransport)
+            .setClientAuthentication(ClientParametersAuthentication(
+                applicationProperties.oAuthClient.id,
+                applicationProperties.oAuthClient.secret
+            ))
+            .setTokenServerEncodedUrl(clientRegistrationRepository.findByRegistrationId("google").providerDetails.tokenUri)
+            .addRefreshListener(accessTokenRefresher)
+            .build()
             .setAccessToken(accessToken)
-// TODO refresh-token needs setJsonFactory, setTransport, setClientAuthentication and setTokenServerUrl
-//            .setRefreshToken(refreshToken)
+            .setRefreshToken(refreshToken)
+            .also { it.refreshToken() }
     }
 
     private fun createEmail(to: String,

@@ -3,6 +3,7 @@ package cz.bedla.differ.service
 import cz.bedla.differ.dto.User
 import cz.bedla.differ.dto.createUser
 import cz.bedla.differ.utils.getAttribute
+import jetbrains.exodus.entitystore.Entity
 import jetbrains.exodus.entitystore.PersistentEntityStore
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
@@ -37,7 +38,7 @@ class UserServiceImpl(
         lastName: String,
         email: String,
         accessToken: String,
-        refreshToken: String?
+        refreshToken: String
     ) = persistentEntityStore.executeInTransaction { tx ->
         val entity = tx.findUserEntity(subject)
             .let {
@@ -54,6 +55,21 @@ class UserServiceImpl(
         entity.setProperty("firstName", firstName)
         entity.setProperty("lastName", lastName)
         entity.setProperty("email", email)
+        updateOAuthTokens(entity, accessToken, refreshToken)
+    }
+
+    override fun updateOAuthTokens(
+        oldAccessToken: String,
+        newAccessToken: String,
+        newRefreshToken: String?
+    ) = persistentEntityStore.executeInTransaction { tx ->
+        val entity = tx.find("User", "oauth-accessToken", oldAccessToken)
+            .first ?: return@executeInTransaction
+
+        updateOAuthTokens(entity, newAccessToken, newRefreshToken)
+    }
+
+    private fun updateOAuthTokens(entity: Entity, accessToken: String, refreshToken: String?) {
         entity.setProperty("oauth-accessToken", accessToken)
         if (refreshToken != null) entity.setProperty("oauth-refreshToken", refreshToken)
     }

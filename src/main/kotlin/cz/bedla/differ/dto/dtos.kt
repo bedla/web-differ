@@ -153,7 +153,7 @@ data class User(
     val active: Boolean,
     val oauth: OAuth
 ) {
-    data class OAuth(val accessToken: String, val refreshToken: String?)
+    data class OAuth(val accessToken: String, val refreshToken: String)
 }
 
 fun Entity.createUser(): User {
@@ -164,6 +164,6 @@ fun Entity.createUser(): User {
     val pictureUrl: String = getPropertyAs("pictureUrl")
     val active: Boolean = getPropertyAs("active")
     val accessToken: String = getPropertyAs("oauth-accessToken")
-    val refreshToken: String? = findPropertyAs("oauth-refreshToken")
+    val refreshToken: String = getPropertyAs("oauth-refreshToken")
     return User(subject, firstName, lastName, email, pictureUrl, active, User.OAuth(accessToken, refreshToken))
 }

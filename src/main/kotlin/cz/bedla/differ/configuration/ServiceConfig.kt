@@ -1,15 +1,20 @@
 package cz.bedla.differ.configuration
 
+import cz.bedla.differ.security.AccessTokenRefresher
 import cz.bedla.differ.service.*
 import jetbrains.exodus.entitystore.PersistentEntityStore
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.task.TaskExecutor
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
 
 @Configuration
 class ServiceConfig(
     private val persistentEntityStore: PersistentEntityStore,
-    private val taskExecutor: TaskExecutor
+    private val taskExecutor: TaskExecutor,
+    private val applicationProperties: ApplicationProperties,
+    private val clientRegistrationRepository: ClientRegistrationRepository,
+    private val accessTokenRefresher: AccessTokenRefresher
 ) {
     @Bean
     fun webPageService(): WebPageService =
@@ -33,7 +38,7 @@ class ServiceConfig(
 
     @Bean
     fun emailSender(): EmailSender =
-        EmailSenderImpl()
+        EmailSenderImpl(applicationProperties, clientRegistrationRepository, accessTokenRefresher)
 
     @Bean
     fun htmlPageService(): HtmlPageService =

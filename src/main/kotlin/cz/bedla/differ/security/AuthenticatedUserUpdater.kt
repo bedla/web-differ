@@ -21,9 +21,19 @@ class AuthenticatedUserUpdater(
         val firstName = principal.getAttribute("given_name")
         val lastName = principal.getAttribute("family_name")
         val email = principal.getAttribute("email")
-        val accessToken = authentication.accessToken.tokenValue!!
+        val accessToken = authentication.accessToken.tokenValue
+            ?: error("Invalid accessToken ${authentication.accessToken}")
         val refreshToken = authentication.refreshToken?.tokenValue
+            ?: error("Invalid refreshToken ${authentication.refreshToken}")
 
-        userService.createOrUpdateUser(subject, pictureUrl, firstName, lastName, email, accessToken, refreshToken)
+        userService.createOrUpdateUser(
+            subject,
+            pictureUrl,
+            firstName,
+            lastName,
+            email,
+            accessToken,
+            refreshToken
+        )
     }
 }

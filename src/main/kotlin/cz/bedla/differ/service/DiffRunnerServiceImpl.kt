@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory
 import java.time.ZonedDateTime
 import java.util.*
 import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeUnit
 
 class DiffRunnerServiceImpl(
     private val persistentEntityStore: PersistentEntityStore,
@@ -54,7 +55,7 @@ class DiffRunnerServiceImpl(
                             log.info("Diff found for web-page URL '$url' for selector '$selector': '$lastContent' -> '$currentText'")
                             tx.saveDiff(webPageEntity, currentText)
                             val future = emailSender.sendEmail(user, webPageEntity.createWebPageDetail(tx.getDiffs(webPageEntity)))
-                            future.get()
+                            future.get(5, TimeUnit.SECONDS)
                         }
                     }
                 }
