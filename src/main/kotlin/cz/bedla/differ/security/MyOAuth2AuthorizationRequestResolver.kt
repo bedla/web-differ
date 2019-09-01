@@ -8,7 +8,7 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
 import javax.servlet.http.HttpServletRequest
 
 class MyOAuth2AuthorizationRequestResolver(
-    private val clientRegistrationRepository: ClientRegistrationRepository
+    clientRegistrationRepository: ClientRegistrationRepository
 ) : OAuth2AuthorizationRequestResolver {
     private val defaultAuthorizationRequestResolver = DefaultOAuth2AuthorizationRequestResolver(
         clientRegistrationRepository,
@@ -28,6 +28,7 @@ class MyOAuth2AuthorizationRequestResolver(
         val additionalParameters = mutableMapOf<String, Any>()
             .also { it.putAll(authorizationRequest.additionalParameters) }
             .also { it["access_type"] = "offline" }
+            .also { it["prompt"] = "select_account consent" }
 
         return OAuth2AuthorizationRequest.from(authorizationRequest)
             .additionalParameters(additionalParameters)
