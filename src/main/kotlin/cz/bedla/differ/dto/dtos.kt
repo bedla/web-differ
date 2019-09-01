@@ -116,7 +116,8 @@ data class DiffInvalidSelector(
 data class DiffError(
     override val created: ZonedDateTime,
     val exceptionUuid: String,
-    val exceptionName: String
+    val exceptionName: String,
+    val exceptionMessage: String
 ) : Diff
 
 data class DiffStopExecution(
@@ -126,8 +127,9 @@ data class DiffStopExecution(
 
 fun Entity.createDiff(): Diff {
     val invalidSelector: String? = findPropertyAs("invalidSelector")
-    val exceptionName: String? = findPropertyAs("exceptionName")
     val exceptionUuid: String? = findPropertyAs("exceptionUuid")
+    val exceptionName: String? = findPropertyAs("exceptionName")
+    val exceptionMessage: String? = findPropertyAs("exceptionMessage")
     val content: String? = findPropertyAs("content")
     val countErrors: Int? = findPropertyAs("countErrors")
     val created = getPropertyAsZonedDateTime("created")
@@ -137,7 +139,8 @@ fun Entity.createDiff(): Diff {
         exceptionName != null -> DiffError(
             created,
             exceptionUuid ?: error("Exception UUID no found for entity $this"),
-            exceptionName)
+            exceptionName,
+            exceptionMessage ?: error("Exception message no found for entity $this"))
         content != null -> DiffContent(created, content)
         countErrors != null -> DiffStopExecution(created, countErrors)
         else -> error("Unrecognized diff for entity $this")

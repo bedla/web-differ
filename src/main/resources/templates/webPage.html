@@ -131,7 +131,7 @@
 
         let exceptionInfo = function (item) {
             if (item['@type'] === 'ERROR') {
-                return `${item.exceptionName} id=${item.exceptionUuid}`
+                return `${item.exceptionName}(message=${item.exceptionMessage}, id=${item.exceptionUuid})`
             } else {
                 return null;
             }
