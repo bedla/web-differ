@@ -37,8 +37,9 @@ class DiffRunnerServiceImpl(
         result.save(persistentEntityStore)
         when (result) {
             is Result.Diff -> sendEmail(webPageId)
-            is Result.Error -> checkErrors(userWebPage)
         }
+
+        checkErrors(userWebPage)
     }
 
     private fun sendEmail(webPageId: String) {
@@ -48,14 +49,14 @@ class DiffRunnerServiceImpl(
             future.get(10, TimeUnit.SECONDS)
         } catch (e: Exception) {
             Result.Error(webPageId, userWebPage.webPage.url, e).save(persistentEntityStore)
-            checkErrors(userWebPage)
         }
     }
 
     private fun checkErrors(userWebPage: UserWebPage) = persistentEntityStore.executeInTransaction { tx ->
         val webPageEntity = tx.getWebPage(userWebPage.webPage.id)
-        if (tx.countLatestContinuousErrors(webPageEntity) >= maxErrors) {
-            tx.saveStopFurtherExecution(webPageEntity) { it.setProperty("countErrors", maxErrors) }
+        val errorsCount = tx.countLatestContinuousErrors(webPageEntity)
+        if (errorsCount >= maxErrors) {
+            tx.saveStopFurtherExecution(webPageEntity) { it.setProperty("countErrors", errorsCount) }
         }
 
         val latestDiff = tx.getDiffs(webPageEntity).firstOrNull()
