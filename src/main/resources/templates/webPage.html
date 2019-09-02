@@ -137,6 +137,16 @@
             }
         };
 
+        let stopError = function (item) {
+            if (item['@type'] === 'STOP_COUNT') {
+                return `Too many errors ${item.countErrors}`
+            } else if (item['@type'] === 'STOP_API') {
+                return `Gmail API error`
+            } else {
+                return null;
+            }
+        };
+
         let itemIcon = function (item) {
             if (item['@type'] === 'ERROR') {
                 return $('<i>')
@@ -153,11 +163,16 @@
                     .addClass("far")
                     .addClass("fa-object-group")
                     .attr("title", "Content from selector");
-            } else if (item['@type'] === 'STOP') {
+            } else if (item['@type'] === 'STOP_COUNT') {
                 return $('<i>')
                     .addClass("fas")
                     .addClass("fa-ban")
-                    .attr("title", "Execution stopped");
+                    .attr("title", "Execution stopped because of too many errors");
+            } else if (item['@type'] === 'STOP_API') {
+                return $('<i>')
+                    .addClass("fas")
+                    .addClass("fa-ban")
+                    .attr("title", "Execution stopped because of Api error");
             } else {
                 throw 'Invalid type' + item['@type'];
             }
@@ -181,7 +196,7 @@
                     tr.append($('<td>').text(coalesce(
                         item.content,
                         item.selector,
-                        item.countErrors,
+                        stopError(item),
                         exceptionInfo(item))));
                     tr.append($('<td>').append(createDateTimeSpan(formatZonedDateTime(item.created))));
                     tBody.append(tr);

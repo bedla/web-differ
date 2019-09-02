@@ -36,7 +36,7 @@ class DiffRunnerServiceImpl(
         result.save(persistentEntityStore)
         when (result) {
             is Result.Diff -> sendEmail(webPageId)
-            is Result.Error -> checkLatestContinuousErrors(userWebPage)
+            is Result.Error -> checkErrors(userWebPage)
         }
     }
 
@@ -47,14 +47,19 @@ class DiffRunnerServiceImpl(
             future.get(10, TimeUnit.SECONDS)
         } catch (e: Exception) {
             Result.Error(webPageId, userWebPage.webPage.url, e).save(persistentEntityStore)
-            checkLatestContinuousErrors(userWebPage)
+            checkErrors(userWebPage)
         }
     }
 
-    private fun checkLatestContinuousErrors(userWebPage: UserWebPage) = persistentEntityStore.executeInTransaction { tx ->
+    private fun checkErrors(userWebPage: UserWebPage) = persistentEntityStore.executeInTransaction { tx ->
         val webPageEntity = tx.getWebPage(userWebPage.webPage.id)
         if (tx.countLatestContinuousErrors(webPageEntity) >= maxErrors) {
-            tx.saveStopFurtherExecution(webPageEntity, maxErrors)
+            tx.saveStopFurtherExecution(webPageEntity) { it.setProperty("countErrors", maxErrors) }
+        }
+
+        val latestDiff = tx.getDiffs(webPageEntity).firstOrNull()
+        if (latestDiff is DiffError && latestDiff.exceptionName.contains("GoogleJsonResponseException")) {
+            tx.saveStopFurtherExecution(webPageEntity) { it.setProperty("apiErrorGmail", true) }
         }
     }
 
@@ -183,11 +188,14 @@ class DiffRunnerServiceImpl(
             return errors.size
         }
 
-        private fun StoreTransaction.saveStopFurtherExecution(webPageEntity: Entity, countErrors: Int) {
-            log.info("Execution of $webPageEntity automatically stopped after $countErrors continuous errors")
+        private fun StoreTransaction.saveStopFurtherExecution(
+            webPageEntity: Entity,
+            modifier: (Entity) -> Unit
+        ) {
+            log.info("Execution of $webPageEntity automatically stopped because of some errors")
 
             val entity = newEntity("Diff")
-            entity.setProperty("countErrors", countErrors)
+            modifier(entity)
             entity.setPropertyZonedDateTime("created", ZonedDateTime.now())
             entity.setLink("webPage", webPageEntity)
 

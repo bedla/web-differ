@@ -97,7 +97,8 @@ fun Entity.createWebPageDetail(diffs: List<Diff>): WebPageDetail {
     JsonSubTypes.Type(value = DiffContent::class, name = "CONTENT"),
     JsonSubTypes.Type(value = DiffInvalidSelector::class, name = "INVALID_SELECTOR"),
     JsonSubTypes.Type(value = DiffError::class, name = "ERROR"),
-    JsonSubTypes.Type(value = DiffStopExecution::class, name = "STOP")
+    JsonSubTypes.Type(value = DiffStopExecutionCount::class, name = "STOP_COUNT"),
+    JsonSubTypes.Type(value = DiffStopExecutionApiError::class, name = "STOP_API")
 ])
 interface Diff {
     val created: ZonedDateTime
@@ -120,9 +121,13 @@ data class DiffError(
     val exceptionMessage: String
 ) : Diff
 
-data class DiffStopExecution(
+data class DiffStopExecutionCount(
     override val created: ZonedDateTime,
     val countErrors: Int
+) : Diff
+
+data class DiffStopExecutionApiError(
+    override val created: ZonedDateTime
 ) : Diff
 
 fun Entity.createDiff(): Diff {
@@ -132,6 +137,7 @@ fun Entity.createDiff(): Diff {
     val exceptionMessage: String? = findPropertyAs("exceptionMessage")
     val content: String? = findPropertyAs("content")
     val countErrors: Int? = findPropertyAs("countErrors")
+    val apiErrorGmail: Boolean? = findPropertyAs("apiErrorGmail")
     val created = getPropertyAsZonedDateTime("created")
 
     return when {
@@ -142,7 +148,8 @@ fun Entity.createDiff(): Diff {
             exceptionName,
             exceptionMessage ?: error("Exception message no found for entity $this"))
         content != null -> DiffContent(created, content)
-        countErrors != null -> DiffStopExecution(created, countErrors)
+        countErrors != null -> DiffStopExecutionCount(created, countErrors)
+        apiErrorGmail != null -> DiffStopExecutionApiError(created)
         else -> error("Unrecognized diff for entity $this")
     }
 }
