@@ -8,6 +8,7 @@ import cz.bedla.differ.utils.setPropertyZonedDateTime
 import jetbrains.exodus.entitystore.Entity
 import jetbrains.exodus.entitystore.PersistentEntityStore
 import jetbrains.exodus.entitystore.StoreTransaction
+import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.time.ZonedDateTime
 import java.util.*
@@ -69,6 +70,7 @@ class DiffRunnerServiceImpl(
         try {
             val selector = userWebPage.webPage.selector
             val currentText = htmlPageService.contentOfSelector(url, selector)
+                .let { if ((it?.length ?: -1) > 100) null else it }
             val lastContent = userWebPage.lastContent
             if (currentText == null) {
                 log.info("Unable to find selector '$selector' at web-page URL '$url'")
@@ -79,10 +81,10 @@ class DiffRunnerServiceImpl(
                     Result.FirstRun(webPageId, currentText)
                 } else {
                     if (currentText == lastContent) {
-                        log.info("There is no diff on web-page.id=${webPageId} URL '$url' for selector '$selector' value '$currentText'")
+                        log.info("There is no diff on web-page.id=${webPageId} URL '$url' for selector '$selector' value '${StringUtils.left(currentText, 100)}'")
                         Result.Equals(webPageId, currentText)
                     } else {
-                        log.info("Diff found for web-page.id=${webPageId} URL '$url' for selector '$selector': '$lastContent' -> '$currentText'")
+                        log.info("Diff found for web-page.id=${webPageId} URL '$url' for selector '$selector': '${StringUtils.left(lastContent, 100)}' -> '${StringUtils.left(currentText, 100)}'")
                         Result.Diff(webPageId, lastContent, currentText)
                     }
                 }
