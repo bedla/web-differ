@@ -315,32 +315,33 @@
                             let resultContent = safeString(data.content);
                             bootbox.alert({
                                 title: 'Result of test execution',
-                                message: '' +
-                                    '<div class="input-group input-group-sm mb-1">\n' +
-                                    '  <div class="input-group-prepend">\n' +
-                                    '    <span class="input-group-text">URL</span>\n' +
-                                    '  </div>\n' +
-                                    `  <textarea class="form-control" rows="2" readonly>${webPageUrlText}</textarea>\n` +
-                                    '</div>' +
-                                    '<div class="input-group input-group-sm mb-3">\n' +
-                                    '  <div class="input-group-prepend">\n' +
-                                    '    <span class="input-group-text">Selector</span>\n' +
-                                    '  </div>\n' +
-                                    `  <input type="text" class="form-control" readonly value="${webPageSelectorText}">\n` +
-                                    '</div>' +
-                                    '<div class="input-group input-group-sm mb-1">\n' +
-                                    '  <div class="input-group-prepend">\n' +
-                                    '    <span class="input-group-text">Content length</span>\n' +
-                                    '  </div>\n' +
-                                    `  <input type="text" class="form-control" readonly value="${data.length}">\n` +
-                                    '</div>' +
-                                    '<div class="input-group input-group-sm mb-1">\n' +
-                                    '  <div class="input-group-prepend">\n' +
-                                    '    <span class="input-group-text">Selector content</span>\n' +
-                                    '  </div>\n' +
-                                    `  <textarea class="form-control" rows="4" readonly>${resultContent}</textarea>\n` +
-                                    '</div>' +
-                                    '<p>Note: Do not forget to save data when you changed values (Name, URL, Selector)!</p>'
+                                message: `
+                                    <div class="input-group input-group-sm mb-1">
+                                      <div class="input-group-prepend">
+                                        <span class="input-group-text">URL</span>
+                                      </div>
+                                      <textarea class="form-control" rows="2" readonly>${webPageUrlText}</textarea>
+                                    </div>
+                                    <div class="input-group input-group-sm mb-3">
+                                      <div class="input-group-prepend">
+                                        <span class="input-group-text">Selector</span>
+                                      </div>
+                                      <input type="text" class="form-control" readonly value="${webPageSelectorText}">
+                                    </div>
+                                    <div class="input-group input-group-sm mb-1">
+                                      <div class="input-group-prepend">
+                                        <span class="input-group-text">Content length</span>
+                                      </div>
+                                      <input type="text" class="form-control" readonly value="${data.length}">
+                                    </div>
+                                    <div class="input-group input-group-sm mb-1">
+                                      <div class="input-group-prepend">
+                                        <span class="input-group-text">Selector content</span>
+                                      </div>
+                                      <textarea class="form-control" rows="4" readonly>${resultContent}</textarea>
+                                    </div>
+                                    <p>Note: Do not forget to save data when you changed values (Name, URL, Selector)!</p>
+`
                             });
                         } else {
                             throw `Invalid type ${data}`
@@ -353,26 +354,26 @@
                             let errorMessage = safeString(jqXHR.responseJSON.errorMessage);
                             bootbox.alert({
                                 title: 'Error occurred',
-                                message: '' +
-                                    '<div class="input-group input-group-sm mb-3">\n' +
-                                    '  <div class="input-group-prepend">\n' +
-                                    '    <span class="input-group-text">UUID</span>\n' +
-                                    '  </div>\n' +
-                                    `  <input type="text" class="form-control" readonly value="${uuid}">\n` +
-                                    '</div>' +
-                                    '<div class="input-group input-group-sm mb-1">\n' +
-                                    '  <div class="input-group-prepend">\n' +
-                                    '    <span class="input-group-text">Error</span>\n' +
-                                    '  </div>\n' +
-                                    `  <input type="text" class="form-control" readonly value="${errorType}">\n` +
-                                    '</div>' +
-                                    '<div class="input-group input-group-sm mb-1">\n' +
-                                    '  <div class="input-group-prepend">\n' +
-                                    '    <span class="input-group-text">Message</span>\n' +
-                                    '  </div>\n' +
-                                    `  <input type="text" class="form-control" readonly value="${errorMessage}">\n` +
-                                    '</div>' +
-                                    ''
+                                message: `
+                                    <div class="input-group input-group-sm mb-3">
+                                      <div class="input-group-prepend">
+                                        <span class="input-group-text">UUID</span>
+                                      </div>
+                                      <input type="text" class="form-control" readonly value="${uuid}">
+                                    </div>
+                                    <div class="input-group input-group-sm mb-1">
+                                      <div class="input-group-prepend">
+                                        <span class="input-group-text">Error</span>
+                                      </div>
+                                      <input type="text" class="form-control" readonly value="${errorType}">
+                                    </div>
+                                    <div class="input-group input-group-sm mb-1">
+                                      <div class="input-group-prepend">
+                                        <span class="input-group-text">Message</span>
+                                      </div>
+                                      <input type="text" class="form-control" readonly value="${errorMessage}">
+                                    </div>
+`
                             });
                         } else {
                             onError(jqXHR, textStatus, errorThrown, jQuery.noop, {
