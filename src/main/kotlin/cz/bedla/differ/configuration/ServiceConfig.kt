@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.task.TaskExecutor
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
+import javax.net.ssl.SSLSocketFactory
 
 @Configuration
 class ServiceConfig(
@@ -42,5 +43,8 @@ class ServiceConfig(
 
     @Bean
     fun htmlPageService(): HtmlPageService =
-        HtmlPageServiceImpl()
+        HtmlPageServiceImpl(HtmlPageService.Config(
+            5 * 1000,
+            SSLSocketFactory.getDefault() as SSLSocketFactory
+        ))
 }

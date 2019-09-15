@@ -1,21 +1,13 @@
 package cz.bedla.differ.service
 
 import org.jsoup.Jsoup
-import org.springframework.beans.factory.InitializingBean
-import javax.net.ssl.SSLSocketFactory
 
-class HtmlPageServiceImpl : HtmlPageService, InitializingBean {
-    private lateinit var sslSocketFactory: SSLSocketFactory
-
-    override fun afterPropertiesSet() {
-        sslSocketFactory = SSLSocketFactory.getDefault() as SSLSocketFactory
-    }
-
+class HtmlPageServiceImpl(private val config: HtmlPageService.Config) : HtmlPageService {
     override fun contentOfSelector(url: String, selector: String): String? {
         val doc = Jsoup.connect(url)
-            .sslSocketFactory(if (url.startsWith("https://")) sslSocketFactory else null)
+            .sslSocketFactory(config.sslSocketFactory)
             .userAgent(userAgent)
-            .timeout(5 * 1000)
+            .timeout(config.timeoutMillis)
             .get()!!
 
         return doc.select(selector).first()?.text()
