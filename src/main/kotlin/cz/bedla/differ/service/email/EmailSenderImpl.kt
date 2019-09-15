@@ -1,10 +1,10 @@
-package cz.bedla.differ.service
+package cz.bedla.differ.service.email
 
 import com.google.api.client.auth.oauth2.BearerToken
 import com.google.api.client.auth.oauth2.ClientParametersAuthentication
 import com.google.api.client.auth.oauth2.Credential
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
-import com.google.api.client.json.jackson2.JacksonFactory
+import com.google.api.client.http.HttpTransport
+import com.google.api.client.json.JsonFactory
 import com.google.api.client.util.Base64
 import com.google.api.services.gmail.Gmail
 import cz.bedla.differ.configuration.ApplicationProperties
@@ -24,10 +24,12 @@ import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
 
 
-open class EmailSenderImpl(
+class EmailSenderImpl(
     private val applicationProperties: ApplicationProperties,
     private val clientRegistrationRepository: ClientRegistrationRepository,
-    private val accessTokenRefresher: AccessTokenRefresher
+    private val accessTokenRefresher: AccessTokenRefresher,
+    private val httpTransport: HttpTransport,
+    private val jsonFactory: JsonFactory
 ) : EmailSender {
     @Async
     override fun sendEmail(user: User, webPage: WebPageDetail): CompletableFuture<Boolean> {
@@ -117,7 +119,5 @@ open class EmailSenderImpl(
 
     companion object {
         val log = LoggerFactory.getLogger(EmailSenderImpl::class.java)!!
-        val jsonFactory = JacksonFactory.getDefaultInstance()!!
-        val httpTransport = GoogleNetHttpTransport.newTrustedTransport()!!
     }
 }

@@ -1,6 +1,7 @@
 package cz.bedla.differ.service
 
 import cz.bedla.differ.dto.*
+import cz.bedla.differ.service.email.EmailSender
 import cz.bedla.differ.utils.findEntity
 import cz.bedla.differ.utils.findPropertyAs
 import cz.bedla.differ.utils.getDiffs

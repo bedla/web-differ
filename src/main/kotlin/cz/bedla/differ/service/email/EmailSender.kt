@@ -1,4 +1,4 @@
-package cz.bedla.differ.service
+package cz.bedla.differ.service.email
 
 import cz.bedla.differ.dto.User
 import cz.bedla.differ.dto.WebPageDetail

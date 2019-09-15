@@ -5,12 +5,13 @@ import com.google.api.client.auth.oauth2.CredentialRefreshListener
 import com.google.api.client.auth.oauth2.TokenErrorResponse
 import com.google.api.client.auth.oauth2.TokenResponse
 import cz.bedla.differ.service.UserService
+import org.slf4j.LoggerFactory
 
 class AccessTokenRefresher(
     private val userService: UserService
 ) : CredentialRefreshListener {
     override fun onTokenErrorResponse(credential: Credential, tokenErrorResponse: TokenErrorResponse) {
-        error("Unable to refresh access token: $tokenErrorResponse")
+        log.error("Unable to refresh access token: $tokenErrorResponse")
     }
 
     override fun onTokenResponse(credential: Credential, tokenResponse: TokenResponse) {
@@ -18,5 +19,9 @@ class AccessTokenRefresher(
         val newAccessToken = tokenResponse.accessToken ?: error("No newAccessToken found")
         val newRefreshToken: String? = tokenResponse.refreshToken
         userService.updateOAuthTokens(oldAccessToken, newAccessToken, newRefreshToken)
+    }
+
+    companion object {
+        private val log = LoggerFactory.getLogger(AccessTokenRefresher::class.java)!!
     }
 }
