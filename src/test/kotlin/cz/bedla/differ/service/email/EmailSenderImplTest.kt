@@ -17,11 +17,11 @@ import cz.bedla.differ.dto.User
 import cz.bedla.differ.dto.WebPageDetail
 import cz.bedla.differ.security.AccessTokenRefresher
 import cz.bedla.differ.service.UserService
+import cz.bedla.differ.testsupport.MyClock
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.verifyNoMoreInteractions
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientPropertiesRegistrationAdapter
@@ -31,7 +31,8 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository
 import org.springframework.test.context.TestPropertySource
-import java.time.*
+import java.time.Clock
+import java.time.ZonedDateTime
 import java.util.*
 
 
@@ -116,8 +117,8 @@ class EmailSenderImplTest {
             .contains("Subject: WebDiffer - change for monitor name")
             .contains("Change detected on web-page: monitor name")
             .contains("URL: http://some.url.cz/here")
-            .contains("Created: 2019-09-12 08:01:13")
-            .contains("Last-run: 2019-09-15 08:01:13")
+            .contains("Created: 2019-09-15 08:35:05")
+            .contains("Last-run: 2019-09-18 08:35:05")
             .contains("Difference: old-value -> new-value")
 
         verify {
@@ -191,12 +192,7 @@ class EmailSenderImplTest {
         fun jsonFactory(): JsonFactory = JacksonFactory.getDefaultInstance()!!
 
         @Bean
-        fun clock(): Clock {
-            val zoneId = ZoneId.of("Europe/Prague");
-            val now = ZonedDateTime.of(2019, Month.SEPTEMBER.value, 15, 20, 1, 13, 999, zoneId)
-            return Clock.fixed(Instant.from(now), zoneId)
-        }
-
+        fun clock(): Clock = MyClock()
     }
 
     companion object {

@@ -4,6 +4,8 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
 import cz.bedla.differ.security.AccessTokenRefresher
 import cz.bedla.differ.service.*
+import cz.bedla.differ.service.diff.DiffRunnerService
+import cz.bedla.differ.service.diff.DiffRunnerServiceImpl
 import cz.bedla.differ.service.email.EmailSender
 import cz.bedla.differ.service.email.EmailSenderImpl
 import jetbrains.exodus.entitystore.PersistentEntityStore
@@ -11,6 +13,8 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.task.TaskExecutor
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
+import java.time.Clock
+import java.util.*
 import javax.net.ssl.SSLSocketFactory
 
 @Configuration
@@ -19,11 +23,12 @@ class ServiceConfig(
     private val taskExecutor: TaskExecutor,
     private val applicationProperties: ApplicationProperties,
     private val clientRegistrationRepository: ClientRegistrationRepository,
-    private val accessTokenRefresher: AccessTokenRefresher
+    private val accessTokenRefresher: AccessTokenRefresher,
+    private val clock: Clock
 ) {
     @Bean
     fun webPageService(): WebPageService =
-        WebPageServiceImpl(persistentEntityStore, diffRunnerExecutor())
+        WebPageServiceImpl(persistentEntityStore, diffRunnerExecutor(), clock)
 
     @Bean
     fun activationService(): ActivationService =
@@ -31,11 +36,11 @@ class ServiceConfig(
 
     @Bean
     fun diffRunnerExecutor(): DiffRunnerExecutor =
-        DiffRunnerExecutorImpl(taskExecutor, persistentEntityStore, diffRunnerService())
+        DiffRunnerExecutorImpl(taskExecutor, persistentEntityStore, diffRunnerService(), clock)
 
     @Bean
     fun diffRunnerService(): DiffRunnerService =
-        DiffRunnerServiceImpl(persistentEntityStore, emailSender(), htmlPageService())
+        DiffRunnerServiceImpl(persistentEntityStore, emailSender(), htmlPageService(), clock, UUID::randomUUID)
 
     @Bean
     fun appInitialized(): AppInitialized =

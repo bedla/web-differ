@@ -5,11 +5,13 @@ import cz.bedla.differ.utils.findEntity
 import cz.bedla.differ.utils.getDiffs
 import cz.bedla.differ.utils.setPropertyZonedDateTime
 import jetbrains.exodus.entitystore.PersistentEntityStore
+import java.time.Clock
 import java.time.ZonedDateTime
 
 class WebPageServiceImpl(
     private val persistentEntityStore: PersistentEntityStore,
-    private val diffRunnerExecutor: DiffRunnerExecutor
+    private val diffRunnerExecutor: DiffRunnerExecutor,
+    private val clock: Clock
 ) : WebPageService {
     override fun find(id: String, userId: String): WebPageDetail? = persistentEntityStore.computeInTransaction { tx ->
         val webPageEntity = tx.findEntity(id) ?: return@computeInTransaction null
@@ -37,7 +39,7 @@ class WebPageServiceImpl(
         entity.setProperty("url", request.url)
         entity.setProperty("selector", request.selector)
         entity.setProperty("enabled", request.enabled)
-        entity.setPropertyZonedDateTime("created", ZonedDateTime.now())
+        entity.setPropertyZonedDateTime("created", ZonedDateTime.now(clock))
         val userEntity = tx.getUserEntity(userId)
         entity.addLink("user", userEntity)
         entity.id.toString()

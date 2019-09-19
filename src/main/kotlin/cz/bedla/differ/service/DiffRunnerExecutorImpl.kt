@@ -1,17 +1,20 @@
 package cz.bedla.differ.service
 
+import cz.bedla.differ.service.diff.DiffRunnerService
 import cz.bedla.differ.utils.findEntity
 import jetbrains.exodus.entitystore.PersistentEntityStore
 import org.slf4j.LoggerFactory
 import org.springframework.core.task.TaskExecutor
 import org.springframework.scheduling.annotation.Scheduled
+import java.time.Clock
 import java.time.ZonedDateTime
 import java.util.concurrent.atomic.AtomicBoolean
 
 class DiffRunnerExecutorImpl(
     private val taskExecutor: TaskExecutor,
     private val persistentEntityStore: PersistentEntityStore,
-    private val diffRunnerService: DiffRunnerService
+    private val diffRunnerService: DiffRunnerService,
+    private val clock: Clock
 ) : DiffRunnerExecutor {
     private val canRun = AtomicBoolean(false)
 
@@ -27,7 +30,7 @@ class DiffRunnerExecutorImpl(
 
     private fun runExecution() = persistentEntityStore.executeInTransaction { tx ->
         val enabled = tx.find("WebPage", "enabled", true)
-        val lastRunMillis = ZonedDateTime.now().minusMinutes(5).toInstant().toEpochMilli()
+        val lastRunMillis = ZonedDateTime.now(clock).minusMinutes(5).toInstant().toEpochMilli()
         val olderRun = tx.find("WebPage", "lastRun", Long.MIN_VALUE, lastRunMillis)
         val toRun = enabled.intersect(olderRun)
         log.info("${toRun.size()} diff(s) is going to be run")

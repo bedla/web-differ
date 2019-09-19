@@ -1,6 +1,7 @@
-package cz.bedla.differ.service
+package cz.bedla.differ.service.diff
 
 import cz.bedla.differ.dto.*
+import cz.bedla.differ.service.HtmlPageService
 import cz.bedla.differ.service.email.EmailSender
 import cz.bedla.differ.utils.findEntity
 import cz.bedla.differ.utils.findPropertyAs
@@ -11,6 +12,7 @@ import jetbrains.exodus.entitystore.PersistentEntityStore
 import jetbrains.exodus.entitystore.StoreTransaction
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
+import java.time.Clock
 import java.time.ZonedDateTime
 import java.util.*
 import java.util.concurrent.ExecutionException
@@ -19,7 +21,9 @@ import java.util.concurrent.TimeUnit
 class DiffRunnerServiceImpl(
     private val persistentEntityStore: PersistentEntityStore,
     private val emailSender: EmailSender,
-    private val htmlPageService: HtmlPageService
+    private val htmlPageService: HtmlPageService,
+    private val clock: Clock,
+    private val uuidGenerator: () -> UUID
 ) : DiffRunnerService {
 
     override fun run(webPageId: String) {
@@ -35,7 +39,7 @@ class DiffRunnerServiceImpl(
         val userWebPage = persistentEntityStore.getUserWebPage(webPageId)
         val result = execute(userWebPage)
 
-        result.save(persistentEntityStore)
+        result.save()
         when (result) {
             is Result.Diff -> sendEmail(webPageId)
         }
@@ -49,7 +53,8 @@ class DiffRunnerServiceImpl(
         try {
             future.get(10, TimeUnit.SECONDS)
         } catch (e: Exception) {
-            Result.Error(webPageId, userWebPage.webPage.url, e).save(persistentEntityStore)
+            Result.Error(webPageId, userWebPage.webPage.url, e,
+                Result.Error.ErrorContext(persistentEntityStore, clock, uuidGenerator)).save()
         }
     }
 
@@ -57,16 +62,16 @@ class DiffRunnerServiceImpl(
         val webPageEntity = tx.getWebPage(userWebPage.webPage.id)
         val errorsCount = tx.countLatestContinuousErrors(webPageEntity)
         if (errorsCount >= maxErrors) {
-            tx.saveStopFurtherExecution(webPageEntity) { it.setProperty("countErrors", errorsCount) }
+            tx.saveStopFurtherExecution(webPageEntity, clock) { it.setProperty("countErrors", errorsCount) }
         }
 
         val latestDiff = tx.getDiffs(webPageEntity).firstOrNull()
         if (latestDiff is DiffError && latestDiff.exceptionName.contains("GoogleJsonResponseException")) {
-            tx.saveStopFurtherExecution(webPageEntity) { it.setProperty("apiErrorGmail", true) }
+            tx.saveStopFurtherExecution(webPageEntity, clock) { it.setProperty("apiErrorGmail", true) }
         }
     }
 
-    private fun execute(userWebPage: UserWebPage): Result {
+    private fun execute(userWebPage: UserWebPage): Result<*> {
         val webPageId = userWebPage.webPage.id
         val url = userWebPage.webPage.url
         try {
@@ -75,24 +80,26 @@ class DiffRunnerServiceImpl(
                 .let { if ((it?.length ?: -1) > 100) null else it }
             val lastContent = userWebPage.lastContent
             if (currentText == null) {
-                log.info("Unable to find selector '$selector' at web-page URL '$url'")
-                return Result.InvalidSelector(webPageId, selector)
+                log.info("Unable to find web-page.id=${webPageId} selector '$selector' at web-page URL '$url'")
+                return Result.InvalidSelector(webPageId,
+                    selector,
+                    Result.InvalidSelector.InvalidSelectorContext(persistentEntityStore, clock))
             } else {
                 return if (lastContent == null) {
-                    log.info("First run for web-page.id=${webPageId} URL '$url'")
-                    Result.FirstRun(webPageId, currentText)
+                    log.info("First run for web-page.id=${webPageId} URL '$url' and content '${StringUtils.left(currentText, 100)}'")
+                    Result.FirstRun(webPageId, currentText, Result.FirstRun.FirstRunContext(persistentEntityStore, clock))
                 } else {
                     if (currentText == lastContent) {
                         log.info("There is no diff on web-page.id=${webPageId} URL '$url' for selector '$selector' value '${StringUtils.left(currentText, 100)}'")
                         Result.Equals(webPageId, currentText)
                     } else {
                         log.info("Diff found for web-page.id=${webPageId} URL '$url' for selector '$selector': '${StringUtils.left(lastContent, 100)}' -> '${StringUtils.left(currentText, 100)}'")
-                        Result.Diff(webPageId, lastContent, currentText)
+                        Result.Diff(webPageId, lastContent, currentText, Result.Diff.DiffContext(persistentEntityStore, clock))
                     }
                 }
             }
         } catch (e: Exception) {
-            return Result.Error(webPageId, url, e)
+            return Result.Error(webPageId, url, e, Result.Error.ErrorContext(persistentEntityStore, clock, uuidGenerator))
         }
     }
 
@@ -100,7 +107,7 @@ class DiffRunnerServiceImpl(
         return persistentEntityStore.computeInTransaction { tx ->
             val entity = tx.findWebPage(webPageId)
             if (entity != null) {
-                entity.setPropertyZonedDateTime("lastRun", ZonedDateTime.now())
+                entity.setPropertyZonedDateTime("lastRun", ZonedDateTime.now(clock))
                 true
             } else {
                 false
@@ -114,34 +121,48 @@ class DiffRunnerServiceImpl(
         val lastContent: String?
     )
 
-    private sealed class Result {
-        abstract fun save(persistentEntityStore: PersistentEntityStore)
+    private sealed class Result<T : Result.Context> {
+        abstract fun save()
+
+        open class Context
 
         internal data class InvalidSelector(
             val webPageId: String,
-            val invalidSelector: String
-        ) : Result() {
-            override fun save(persistentEntityStore: PersistentEntityStore) = persistentEntityStore.executeInTransaction { tx ->
+            val invalidSelector: String,
+            val context: InvalidSelectorContext
+        ) : Result<InvalidSelector.InvalidSelectorContext>() {
+            override fun save() = context.persistentEntityStore.executeInTransaction { tx ->
                 val webPageEntity = tx.getWebPage(webPageId)
-                tx.saveInvalidSelectorRun(webPageEntity, invalidSelector)
+                tx.saveInvalidSelectorRun(webPageEntity, invalidSelector, context.clock)
             }
+
+            class InvalidSelectorContext(
+                val persistentEntityStore: PersistentEntityStore,
+                val clock: Clock
+            ) : Context()
         }
 
         internal data class FirstRun(
             val webPageId: String,
-            val text: String
-        ) : Result() {
-            override fun save(persistentEntityStore: PersistentEntityStore) = persistentEntityStore.executeInTransaction { tx ->
+            val text: String,
+            val context: FirstRunContext
+        ) : Result<FirstRun.FirstRunContext>() {
+            override fun save() = context.persistentEntityStore.executeInTransaction { tx ->
                 val webPageEntity = tx.getWebPage(webPageId)
-                tx.saveFirstRun(webPageEntity, text)
+                tx.saveFirstRun(webPageEntity, text, context.clock)
             }
+
+            class FirstRunContext(
+                val persistentEntityStore: PersistentEntityStore,
+                val clock: Clock
+            ) : Context()
         }
 
         internal data class Equals(
             val webPageId: String,
             val text: String
-        ) : Result() {
-            override fun save(persistentEntityStore: PersistentEntityStore) {
+        ) : Result<Context>() {
+            override fun save() {
                 // no need to save anything when same content
             }
         }
@@ -149,25 +170,40 @@ class DiffRunnerServiceImpl(
         internal data class Diff(
             val webPageId: String,
             val oldText: String,
-            val newText: String
-        ) : Result() {
-            override fun save(persistentEntityStore: PersistentEntityStore) = persistentEntityStore.executeInTransaction { tx ->
+            val newText: String,
+            val context: DiffContext
+        ) : Result<Diff.DiffContext>() {
+            override fun save() = context.persistentEntityStore.executeInTransaction { tx ->
                 val webPageEntity = tx.getWebPage(webPageId)
-                tx.saveDiff(webPageEntity, newText)
+                tx.saveDiff(webPageEntity, newText, context.clock)
             }
+
+            class DiffContext(
+                val persistentEntityStore: PersistentEntityStore,
+                val clock: Clock
+            ) : Context()
         }
 
         internal data class Error(
             val webPageId: String,
             val url: String,
-            val e: Exception
-        ) : Result() {
-            override fun save(persistentEntityStore: PersistentEntityStore) = persistentEntityStore.executeInTransaction { tx ->
+            val e: Exception,
+            val context: ErrorContext
+        ) : Result<Error.ErrorContext>() {
+            override fun save() = context.persistentEntityStore.executeInTransaction { tx ->
                 val webPageEntity = tx.getWebPage(webPageId)
                 tx.saveExceptionRun(webPageEntity,
                     url,
+                    context.clock,
+                    context.uuidGenerator,
                     if (e is ExecutionException) (e.cause ?: e) else e)
             }
+
+            class ErrorContext(
+                val persistentEntityStore: PersistentEntityStore,
+                val clock: Clock,
+                val uuidGenerator: () -> UUID
+            ) : Context()
         }
     }
 
@@ -194,13 +230,14 @@ class DiffRunnerServiceImpl(
 
         private fun StoreTransaction.saveStopFurtherExecution(
             webPageEntity: Entity,
+            clock: Clock,
             modifier: (Entity) -> Unit
         ) {
             log.info("Execution of $webPageEntity automatically stopped because of some errors")
 
             val entity = newEntity("Diff")
             modifier(entity)
-            entity.setPropertyZonedDateTime("created", ZonedDateTime.now())
+            entity.setPropertyZonedDateTime("created", ZonedDateTime.now(clock))
             entity.setLink("webPage", webPageEntity)
 
             webPageEntity.setProperty("enabled", false)
@@ -224,35 +261,35 @@ class DiffRunnerServiceImpl(
             return@computeInTransaction UserWebPage(user, webPage, tx.findLastContent(webPageEntity))
         }
 
-        private fun StoreTransaction.saveDiff(webPageEntity: Entity, diff: String) {
+        private fun StoreTransaction.saveDiff(webPageEntity: Entity, diff: String, clock: Clock) {
             val entity = newEntity("Diff")
             entity.setProperty("content", diff)
-            entity.setPropertyZonedDateTime("created", ZonedDateTime.now())
+            entity.setPropertyZonedDateTime("created", ZonedDateTime.now(clock))
             entity.setLink("webPage", webPageEntity)
         }
 
-        private fun StoreTransaction.saveFirstRun(webPageEntity: Entity, content: String) {
-            saveDiff(webPageEntity, content)
+        private fun StoreTransaction.saveFirstRun(webPageEntity: Entity, content: String, clock: Clock) {
+            saveDiff(webPageEntity, content, clock)
         }
 
-        private fun StoreTransaction.saveInvalidSelectorRun(webPageEntity: Entity, selector: String) {
+        private fun StoreTransaction.saveInvalidSelectorRun(webPageEntity: Entity, selector: String, clock: Clock) {
             val entity = newEntity("Diff")
             entity.setProperty("invalidSelector", selector)
-            entity.setPropertyZonedDateTime("created", ZonedDateTime.now())
+            entity.setPropertyZonedDateTime("created", ZonedDateTime.now(clock))
             entity.setLink("webPage", webPageEntity)
         }
 
-        private fun StoreTransaction.saveExceptionRun(webPageEntity: Entity, url: String, e: Throwable) {
-            val uuid = UUID.randomUUID().toString()
+        private fun StoreTransaction.saveExceptionRun(webPageEntity: Entity, url: String, clock: Clock, uuidGenerator: () -> UUID, e: Throwable) {
+            val uuid = uuidGenerator().toString()
 
             val entity = newEntity("Diff")
             entity.setProperty("exceptionUuid", uuid)
             entity.setProperty("exceptionName", e.javaClass.name)
             entity.setProperty("exceptionMessage", e.message ?: "")
-            entity.setPropertyZonedDateTime("created", ZonedDateTime.now())
+            entity.setPropertyZonedDateTime("created", ZonedDateTime.now(clock))
             entity.setLink("webPage", webPageEntity)
 
-            log.error("There was error with diff run uuid=$uuid and URL=$url", e)
+            log.error("There was error with diff run uuid='$uuid' and URL='$url'", e)
         }
     }
 }
