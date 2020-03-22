@@ -59,7 +59,7 @@ class ServiceConfig(
     @Bean
     fun htmlPageService(): HtmlPageService =
         HtmlPageServiceImpl(HtmlPageService.Config(
-            5 * 1000,
+            30 * 1000,
             SSLSocketFactory.getDefault() as SSLSocketFactory
         ))
 }
