@@ -77,7 +77,7 @@ class DiffRunnerServiceImpl(
         try {
             val selector = userWebPage.webPage.selector
             val currentText = htmlPageService.contentOfSelector(url, selector)
-                .let { if ((it?.length ?: -1) > 100) null else it }
+                .let { if ((it?.length ?: -1) > 1000) null else it }
             val lastContent = userWebPage.lastContent
             if (currentText == null) {
                 log.info("Unable to find web-page.id=${webPageId} selector '$selector' at web-page URL '$url'")
