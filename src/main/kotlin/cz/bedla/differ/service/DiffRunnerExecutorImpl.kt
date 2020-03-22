@@ -22,7 +22,7 @@ class DiffRunnerExecutorImpl(
         canRun.set(true)
     }
 
-    @Scheduled(cron = "0 */5 * * * *")
+    @Scheduled(cron = "0 * * * * *")
     fun execute() {
         log.info("Differ execution is about to run")
         runExecution()
@@ -30,7 +30,7 @@ class DiffRunnerExecutorImpl(
 
     private fun runExecution() = persistentEntityStore.executeInTransaction { tx ->
         val enabled = tx.find("WebPage", "enabled", true)
-        val lastRunMillis = ZonedDateTime.now(clock).minusMinutes(5).toInstant().toEpochMilli()
+        val lastRunMillis = ZonedDateTime.now(clock).minusSeconds(50).toInstant().toEpochMilli()
         val olderRun = tx.find("WebPage", "lastRun", Long.MIN_VALUE, lastRunMillis)
         val toRun = enabled.intersect(olderRun)
         log.info("${toRun.size()} diff(s) is going to be run")
