@@ -2,6 +2,7 @@ package cz.bedla.differ.service
 
 import cz.bedla.differ.dto.User
 import cz.bedla.differ.dto.createUser
+import cz.bedla.differ.utils.findAttribute
 import cz.bedla.differ.utils.getAttribute
 import jetbrains.exodus.entitystore.Entity
 import jetbrains.exodus.entitystore.PersistentEntityStore
@@ -82,6 +83,6 @@ class UserServiceImpl(
     private fun userIdFromAuthentication(authentication: Authentication): String {
         val user = (authentication.principal as? OAuth2User
             ?: error("Principal is not ${OAuth2User::class.simpleName} but ${authentication.principal}"))
-        return user.getAttribute("sub")
+        return user.findAttribute("sub") ?: error("Unable to find sub claim")
     }
 }

@@ -16,11 +16,11 @@ class AuthenticatedUserUpdater(
 
     private fun createOrUpdateUser(authentication: OAuth2LoginAuthenticationToken) {
         val principal = authentication.principal ?: return
-        val subject = principal.getAttribute("sub")
+        val subject: String = principal.findAttribute("sub") ?: error("Unable to find sub claim")
         val pictureUrl = principal.findAttribute("picture") ?: "/static/no-avatar.png"
-        val firstName = principal.getAttribute("given_name")
-        val lastName = principal.getAttribute("family_name")
-        val email = principal.getAttribute("email")
+        val firstName = principal.findAttribute("given_name") ?: error("Unable to find given_name claim")
+        val lastName = principal.findAttribute("family_name") ?: error("Unable to find family_name claim")
+        val email = principal.findAttribute("email") ?: error("Unable to find email claim")
         val accessToken = authentication.accessToken.tokenValue
             ?: error("Invalid accessToken ${authentication.accessToken}")
         val refreshToken = authentication.refreshToken?.tokenValue

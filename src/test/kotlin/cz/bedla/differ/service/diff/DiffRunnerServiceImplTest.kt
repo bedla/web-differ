@@ -30,6 +30,7 @@ import java.time.Clock
 import java.time.ZonedDateTime
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.function.Consumer
 
 @SpringBootTest
 class DiffRunnerServiceImplTest {
@@ -75,9 +76,10 @@ class DiffRunnerServiceImplTest {
         }
 
         val result = webPageService.find(webPageId, userId)
+
         assertThat(result)
             .isNotNull
-            .satisfies {
+            .satisfies(Consumer<WebPageDetail?>{
                 it ?: error("non-null satisfy")
                 assertThat(it.id).isEqualTo(webPageId)
                 assertThat(it.name).isEqualTo(webPageName)
@@ -88,7 +90,7 @@ class DiffRunnerServiceImplTest {
                 assertThat(it.lastRun).isEqualTo(ZonedDateTime.now(clock).plusDays(1))
                 assertThat(it.diffs)
                     .containsExactly(DiffContent(ZonedDateTime.now(clock).plusDays(1), "content"))
-            }
+            })
 
         assertThat(logDump.list)
             .hasOnlyOneElementSatisfying {
@@ -114,11 +116,11 @@ class DiffRunnerServiceImplTest {
         val result = webPageService.find(webPageId, userId)
         assertThat(result)
             .isNotNull
-            .satisfies {
+            .satisfies(Consumer<WebPageDetail?>{
                 it ?: error("non-null satisfy")
                 assertThat(it.diffs)
                     .containsExactly(DiffInvalidSelector(ZonedDateTime.now(clock), ".selector"))
-            }
+            })
 
         assertThat(logDump.list)
             .hasOnlyOneElementSatisfying {
@@ -137,18 +139,18 @@ class DiffRunnerServiceImplTest {
         createUser(userId)
         val webPageId = webPageService.create(userId, CreateWebPage(webPageName, "http://page1.com", ".selector", true))
 
-        every { htmlPageService.contentOfSelector(any(), any()) } returns StringUtils.repeat("x", 101)
+        every { htmlPageService.contentOfSelector(any(), any()) } returns StringUtils.repeat("x", 1001)
 
         fixture.run(webPageId)
 
         val result = webPageService.find(webPageId, userId)
         assertThat(result)
             .isNotNull
-            .satisfies {
+            .satisfies(Consumer<WebPageDetail?>{
                 it ?: error("non-null satisfy")
                 assertThat(it.diffs)
                     .containsExactly(DiffInvalidSelector(ZonedDateTime.now(clock), ".selector"))
-            }
+            })
 
         assertThat(logDump.list)
             .hasOnlyOneElementSatisfying {
@@ -176,11 +178,11 @@ class DiffRunnerServiceImplTest {
         val result = webPageService.find(webPageId, userId)
         assertThat(result)
             .isNotNull
-            .satisfies {
+            .satisfies(Consumer<WebPageDetail?>{
                 it ?: error("non-null satisfy")
                 assertThat(it.diffs)
                     .containsExactly(DiffContent(ZonedDateTime.now(clock), "xxx"))
-            }
+            })
 
         assertThat(logDump.list)
             .hasOnlyOneElementSatisfying {
@@ -209,14 +211,14 @@ class DiffRunnerServiceImplTest {
         val result = webPageService.find(webPageId, userId)
         assertThat(result)
             .isNotNull
-            .satisfies {
+            .satisfies(Consumer<WebPageDetail?>{
                 it ?: error("non-null satisfy")
                 assertThat(it.diffs)
                     .containsExactly(
                         DiffContent(ZonedDateTime.now(clock), "yyy"),
                         DiffContent(ZonedDateTime.now(clock), "xxx")
                     )
-            }
+            })
 
         assertThat(logDump.list)
             .hasOnlyOneElementSatisfying {
@@ -242,13 +244,13 @@ class DiffRunnerServiceImplTest {
         val result = webPageService.find(webPageId, userId)
         assertThat(result)
             .isNotNull
-            .satisfies {
+            .satisfies(Consumer<WebPageDetail?>{
                 it ?: error("non-null satisfy")
                 assertThat(it.diffs)
                     .containsExactly(
                         DiffError(ZonedDateTime.now(clock), "12345678-aaaa-bbbb-cccc-210987654321", IllegalStateException::class.java.name, "foo bar")
                     )
-            }
+            })
 
         assertThat(logDump.list)
             .hasOnlyOneElementSatisfying {
@@ -276,7 +278,7 @@ class DiffRunnerServiceImplTest {
         val result = webPageService.find(webPageId, userId)
         assertThat(result)
             .isNotNull
-            .satisfies {
+            .satisfies(Consumer<WebPageDetail?>{
                 it ?: error("non-null satisfy")
                 assertThat(it.diffs)
                     .containsExactly(
@@ -284,7 +286,7 @@ class DiffRunnerServiceImplTest {
                         DiffContent(ZonedDateTime.now(clock), "yyy"),
                         DiffContent(ZonedDateTime.now(clock), "xxx")
                     )
-            }
+            })
 
         assertThat(logDump.list[0].message)
             .contains("Diff found for web-page.id=")
@@ -311,7 +313,7 @@ class DiffRunnerServiceImplTest {
         val result = webPageService.find(webPageId, userId)
         assertThat(result)
             .isNotNull
-            .satisfies {
+            .satisfies(Consumer<WebPageDetail?>{
                 it ?: error("non-null satisfy")
                 assertThat(it.enabled)
                     .isFalse()
@@ -324,7 +326,7 @@ class DiffRunnerServiceImplTest {
                         DiffError(ZonedDateTime.now(clock), "12345678-aaaa-bbbb-cccc-210987654321", IllegalStateException::class.java.name, "foo bar"),
                         DiffError(ZonedDateTime.now(clock), "12345678-aaaa-bbbb-cccc-210987654321", IllegalStateException::class.java.name, "foo bar")
                     )
-            }
+            })
     }
 
     @Test
@@ -344,7 +346,7 @@ class DiffRunnerServiceImplTest {
         val result = webPageService.find(webPageId, userId)
         assertThat(result)
             .isNotNull
-            .satisfies {
+            .satisfies(Consumer<WebPageDetail?>{
                 it ?: error("non-null satisfy")
                 assertThat(it.enabled)
                     .isFalse()
@@ -353,7 +355,7 @@ class DiffRunnerServiceImplTest {
                         DiffError(ZonedDateTime.now(clock), "12345678-aaaa-bbbb-cccc-210987654321", GoogleJsonResponseException::class.java.name, ""),
                         DiffStopExecutionApiError(ZonedDateTime.now(clock))
                     )
-            }
+            })
     }
 
     @Test

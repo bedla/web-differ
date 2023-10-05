@@ -51,7 +51,7 @@ class HtmlPageServiceImplTest {
             assertThat(it.url)
                 .contains("/not-found")
             assertThat(it.message)
-                .isEqualTo("HTTP error fetching URL")
+                .contains("HTTP error fetching URL. Status=404, URL=[")
         }
     }
 

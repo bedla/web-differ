@@ -24,7 +24,7 @@ import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
 
 
-class EmailSenderImpl(
+open class EmailSenderImpl(
     private val applicationProperties: ApplicationProperties,
     private val clientRegistrationRepository: ClientRegistrationRepository,
     private val accessTokenRefresher: AccessTokenRefresher,

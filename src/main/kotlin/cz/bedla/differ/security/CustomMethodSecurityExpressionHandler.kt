@@ -12,7 +12,7 @@ class CustomMethodSecurityExpressionHandler(
     override fun createSecurityExpressionRoot(authentication: Authentication,
                                               invocation: MethodInvocation): MethodSecurityExpressionOperations {
         val root = CustomMethodSecurityExpressionRoot(userService, authentication)
-        root.setThis(invocation.getThis())
+        root.setThis(invocation.getThis() ?: error("Unable to get non-null this"))
         root.setPermissionEvaluator(permissionEvaluator)
         root.setTrustResolver(trustResolver)
         root.setRoleHierarchy(roleHierarchy)
